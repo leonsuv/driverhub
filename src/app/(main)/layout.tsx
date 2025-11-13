@@ -25,7 +25,7 @@ export default async function MainLayout({ children }: MainLayoutProps) {
       <header className="border-b bg-card">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
           <Link href="/feed" className="text-lg font-semibold tracking-tight">
-            drive2
+            driverhub
           </Link>
           <MainNav items={navItems} />
           <div className="ml-auto flex items-center gap-2">
@@ -39,7 +39,7 @@ export default async function MainLayout({ children }: MainLayoutProps) {
       <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-8 sm:px-6">{children}</div>
       <footer className="border-t bg-card">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 text-xs text-muted-foreground sm:px-6">
-          <span>© {year} Drive2 Clone</span>
+          <span>© {year} Driverhub</span>
           <span>Built for enthusiasts, hosted on your infrastructure.</span>
         </div>
       </footer>

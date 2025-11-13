@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Drive2 Clone",
+  title: "Driverhub",
   description: "Self-hosted car community platform",
 };
 

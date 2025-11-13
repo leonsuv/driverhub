@@ -79,7 +79,7 @@ export function CarDetailView({ detail, reviews = [] }: CarDetailViewProps) {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                You&apos;re viewing the Drive2 catalog entry for the {detail.make} {detail.model}. This
+                You&apos;re viewing the Driverhub catalog entry for the {detail.make} {detail.model}. This
                 page aggregates specs, generations, and real-world ownership stories.
               </p>
               <p>

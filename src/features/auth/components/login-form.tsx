@@ -69,7 +69,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl">Sign in to Drive2</CardTitle>
+        <CardTitle className="text-2xl">Sign in to Driverhub</CardTitle>
         <CardDescription>Enter your credentials to access your garage.</CardDescription>
       </CardHeader>
       <Form {...form}>

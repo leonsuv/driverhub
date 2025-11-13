@@ -91,7 +91,7 @@ export function RegisterForm() {
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader>
         <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Join the Drive2 community and share your car journey.</CardDescription>
+        <CardDescription>Join the Driverhub community and share your car journey.</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

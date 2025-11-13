@@ -22,7 +22,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Browse cars</h1>
         <p className="text-muted-foreground text-sm">
-          Explore makes and models reviewed by the Drive2 community.
+          Explore makes and models reviewed by the Driverhub community.
         </p>
       </header>
       <CarsPageClient initialData={initialCars} initialQuery={query} />
