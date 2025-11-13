@@ -8,6 +8,9 @@ import { listReviews } from "@/features/reviews/infrastructure/review.repository
 import { UserProfileHeader } from "@/features/users/components/user-profile-header";
 import { getUserProfileByUsername } from "@/features/users/infrastructure/user.repository";
 import { getCurrentUser } from "@/lib/auth/session";
+import { FollowersList, FollowingList } from "@/features/social/components/follow-lists";
+import { LikedReviewsSection } from "@/features/reviews/components/liked-reviews-section";
+import { countFollowers, countFollowing } from "@/features/social/infrastructure/follow.repository";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -30,7 +33,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const isOwner = currentUser?.id === profile.id;
 
-  const [publishedReviews, draftReviews] = await Promise.all([
+  const [publishedReviews, draftReviews, followersCount, followingCount] = await Promise.all([
     listReviews({
       limit: PUBLISHED_PAGE_SIZE,
       currentUserId: currentUser?.id ?? null,
@@ -43,11 +46,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           filters: { authorId: profile.id, status: "draft" },
         })
       : Promise.resolve(null),
+    countFollowers(profile.id),
+    countFollowing(profile.id),
   ]);
 
   return (
     <div className="flex flex-col gap-10">
       <UserProfileHeader profile={profile} isOwner={isOwner} />
+
+      {/* Quick navigation */}
+      <nav className="flex flex-wrap items-center gap-2">
+        <a href="#followers" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Followers</a>
+        <a href="#following" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Following</a>
+        {isOwner ? (
+          <a href="#liked" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Liked</a>
+        ) : null}
+      </nav>
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -75,6 +89,23 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           </div>
         )}
       </section>
+
+      <section className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-3" id="followers">
+          <h2 className="text-xl font-semibold">Followers ({followersCount})</h2>
+          <FollowersList userId={profile.id} />
+        </div>
+        <div className="space-y-3" id="following">
+          <h2 className="text-xl font-semibold">Following ({followingCount})</h2>
+          <FollowingList userId={profile.id} />
+        </div>
+      </section>
+
+      {isOwner ? (
+        <div id="liked">
+          <LikedReviewsSection userId={profile.id} />
+        </div>
+      ) : null}
 
       {isOwner ? (
         <UserDraftReviewsSection authorId={profile.id} initialData={draftReviews} />

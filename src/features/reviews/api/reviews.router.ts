@@ -6,6 +6,7 @@ import {
   deleteReviewSchema,
   getReviewByIdSchema,
   listReviewsInputSchema,
+  listUserLikedReviewsInputSchema,
   toggleReviewLikeInputSchema,
   updateReviewSchema,
   updateReviewStatusSchema,
@@ -16,6 +17,7 @@ import {
   getPublishedReviewById,
   incrementReviewViewCount,
   listLatestPublishedReviews,
+  listUserLikedReviews,
   listReviews,
   toggleReviewLike,
   updateReview,
@@ -77,6 +79,17 @@ export const reviewsRouter = createTRPCRouter({
         currentUserId: ctx.user?.id,
       });
       return data;
+    }),
+  userLiked: publicProcedure
+    .input(listUserLikedReviewsInputSchema)
+    .query(async ({ input, ctx }) => {
+      const limit = Math.min(Math.max(input.limit ?? 20, 1), 50);
+      return listUserLikedReviews({
+        userId: input.userId,
+        limit,
+        cursor: input.cursor ?? null,
+        currentUserId: ctx.user?.id ?? null,
+      });
     }),
   getById: publicProcedure.input(getReviewByIdSchema).query(async ({ input, ctx }) => {
     const review = await getPublishedReviewById(input.id, ctx.user?.id);

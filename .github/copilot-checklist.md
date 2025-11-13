@@ -63,9 +63,9 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [x] Auth: Implement feature folder, tRPC router, components, hooks, domain/entities
 - [x] Reviews: Implement feature folder, router, repository, domain logic, components, hooks
 - [x] Cars (catalog): Implement feature folder, router, repository, domain/entities, components, hooks
-- [ ] Social (comments/likes/follows): Implement feature folder, router, repository, domain/entities, components
+- [x] Social (comments/likes/follows): Implement feature folder, router, repository, domain/entities, components
 - [x] Users (profile): Implement feature folder, router, repository, domain/entities, components
-- [ ] Garage: Implement feature folder, router, repository, domain/entities, components
+- [x] Garage: Implement feature folder, router, repository, domain/entities, components
 - [x] Feed: Implement feature folder, feed service, router, repository, domain logic, components
 
 ## UI Implementation
@@ -77,23 +77,34 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [x] Review creation form with image upload
 - [x] Review detail page with comments
 - [x] User profile pages
-- [ ] Garage management UI
+- [x] Garage management UI
+- [x] Liked reviews section
+- [x] User draft reviews section
+- [ ] User bookmarked reviews section
+- [x] User followers/following section
+- [ ] User liked comments section
+
 ## API Endpoints (tRPC Routers)
 - [x] Auth endpoints (register with password hashing, session management)
 - [x] Reviews endpoints (list, details, create, update, delete, increment view, filter)
 - [x] Car endpoints (list, catalog, search, filter, makes/models)
 - [x] Comments (create, get, update, delete, replies)
-- [ ] Likes (toggle, get, user likes)
-- [ ] Follows (toggle, get followers/following)
+- [x] Likes (toggle, get, user likes)
+- [x] Follows (toggle, get followers/following)
 - [ ] Users (profile, stats, update, search)
-- [ ] Garage (get/add/update/remove cars)
+- [x] Garage (get/add/update/remove cars)
 - [ ] Feed (get personalized, latest, trending)
+- [ ] Bookmarks (get/add/remove)
+
 
 ## Real-Time Features
 - [ ] Implement tRPC Server-Sent Events (SSE) for notifications
 - [ ] Live comment updates
 - [ ] Real-time like counts
 - [ ] New review notifications
+- [ ] New comment notifications
+- [ ] New follow notifications
+- [ ] New like notifications
 
 ## Testing & Validation
 - [ ] Unit tests for domain entities/services
@@ -117,12 +128,14 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [ ] Optimize images, lazy loading
 - [x] Ensure TypeScript strict mode everywhere
 - [ ] Review and secure all tRPC procedures
+- [ ] Implement rate limiting on API endpoints
 
 ## Performance & Optimization
 - [ ] Implement caching/optimizations in React Query
 - [ ] Review slow endpoints/components, optimize as needed
 - [ ] Add database indexes for frequently queried fields
 - [ ] Optimize file storage (consider compression for images)
+- [ ] Implement lazy loading for lists and images
 
 ## Deployment (Self-Hosted)
 - [ ] Create Dockerfile for Next.js app
@@ -220,6 +233,10 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - Cars catalog slice now centralizes domain mapping/search helpers, exposes catalog hook, and powers infinite browsing UI via tRPC
 - Reviews router now includes filtered listings, update/delete mutations, and a dedicated view increment endpoint
 - User profiles deliver public stats, published reviews, and owner-only draft management with publish/delete actions
+
+- Garage add form now supports photo file upload (local storage) with preview and car selection via dropdown
+- Profile shows Followers and Following lists with counts; quick navigation badges for Followers/Following/Liked
+- Liked reviews section added (owner-only) with pagination
 
 ### Deployment Notes
 - Docker Compose includes PostgreSQL + App

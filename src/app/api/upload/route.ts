@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { env } from "@/config/env";
 import { auth } from "@/lib/auth/config";
 import { saveUpload } from "@/lib/utils/upload";
 
@@ -24,7 +23,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
-  const url = `${env.NEXT_PUBLIC_APP_URL}/uploads/${result.filename}`;
+  // Return a relative URL so next/image treats it as a local asset and no domain config is required.
+  const url = `/uploads/${result.filename}`;
 
   return NextResponse.json({ url, filename: result.filename });
 }

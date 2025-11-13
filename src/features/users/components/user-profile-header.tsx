@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { UserPublicProfile } from "@/features/users/types";
 import { formatDate } from "@/lib/utils/date";
+import { FollowButton } from "@/features/social/components/follow-button";
 
 interface UserProfileHeaderProps {
   profile: UserPublicProfile;
@@ -31,6 +34,17 @@ export function UserProfileHeader({ profile, isOwner = false }: UserProfileHeade
             {profile.bio ? <p className="text-muted-foreground text-sm leading-relaxed">{profile.bio}</p> : null}
           </div>
         </div>
+        {isOwner ? (
+          <div className="sm:self-start">
+            <Button asChild size="sm" variant="secondary">
+              <Link href="/profile/settings">Edit profile</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="sm:self-start">
+            <FollowButton targetUserId={profile.id} />
+          </div>
+        )}
       </div>
       <dl className="grid gap-4 sm:grid-cols-3">
         <ProfileStat label="Total reviews" value={profile.stats.totalReviews} />

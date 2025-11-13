@@ -4,6 +4,7 @@ import { feedRouter } from "@/features/feed/api/feed.router";
 import { reviewsRouter } from "@/features/reviews/api/reviews.router";
 import { socialRouter } from "@/features/social/api/social.router";
 import { usersRouter } from "@/features/users/api/users.router";
+import { garageRouter } from "@/features/garage/api/garage.router";
 import { createTRPCRouter } from "./server";
 
 export const appRouter = createTRPCRouter({
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
 	cars: carsRouter,
 	social: socialRouter,
 	users: usersRouter,
+	garage: garageRouter,
 });
 
 export type AppRouter = typeof appRouter;

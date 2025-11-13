@@ -23,6 +23,122 @@ import {
 } from "@/features/reviews/domain/review.entity";
 
 export class ReviewNotFoundError extends Error {}
+
+interface ListUserLikedReviewsParams {
+  userId: string;
+  limit: number;
+  cursor?: string | null;
+  currentUserId?: string | null;
+}
+
+interface ListUserLikedReviewsResult {
+  items: ReviewSummary[];
+  nextCursor: string | null;
+}
+
+function encodeLikedCursor(createdAt: Date, reviewId: number) {
+  return Buffer.from(`${createdAt.toISOString()}::${reviewId}`).toString("base64");
+}
+
+function decodeLikedCursor(cursor?: string | null) {
+  if (!cursor) return null;
+  try {
+    const [iso, id] = Buffer.from(cursor, "base64").toString("utf8").split("::");
+    return { createdAt: new Date(iso), reviewId: Number(id) };
+  } catch {
+    return null;
+  }
+}
+
+export async function listUserLikedReviews(
+  params: ListUserLikedReviewsParams,
+): Promise<ListUserLikedReviewsResult> {
+  const normalizedLimit = Math.min(Math.max(params.limit, 1), 50);
+  const decoded = decodeLikedCursor(params.cursor ?? null);
+
+  const rows = await db
+    .select({
+      id: reviews.id,
+      title: reviews.title,
+      content: reviews.content,
+      rating: reviews.rating,
+      status: reviews.status,
+      publishedAt: reviews.publishedAt,
+      createdAt: reviews.createdAt,
+      viewCount: reviews.viewCount,
+      likeCount: reviews.likeCount,
+      commentCount: reviews.commentCount,
+      author: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      car: {
+        id: cars.id,
+        make: cars.make,
+        model: cars.model,
+        year: cars.year,
+        generation: cars.generation,
+      },
+      likedAt: reviewLikes.createdAt,
+    })
+    .from(reviewLikes)
+    .innerJoin(reviews, and(eq(reviews.id, reviewLikes.reviewId), eq(reviews.status, "published")))
+    .innerJoin(users, eq(users.id, reviews.authorId))
+    .innerJoin(cars, eq(cars.id, reviews.carId))
+    .where(
+      decoded
+        ? and(eq(reviewLikes.userId, params.userId), lt(reviewLikes.createdAt, decoded.createdAt))
+        : eq(reviewLikes.userId, params.userId),
+    )
+    .orderBy(desc(reviewLikes.createdAt))
+    .limit(normalizedLimit + 1);
+
+  const hasNext = rows.length > normalizedLimit;
+  const visible = hasNext ? rows.slice(0, normalizedLimit) : rows;
+
+  let likedReviewIds = new Set<number>();
+  if (params.currentUserId) {
+    const likedRows = await db
+      .select({ reviewId: reviewLikes.reviewId })
+      .from(reviewLikes)
+      .where(and(eq(reviewLikes.userId, params.currentUserId), inArray(reviewLikes.reviewId, visible.map((r) => r.id))));
+    likedReviewIds = new Set(likedRows.map((r) => r.reviewId));
+  }
+
+  const items: ReviewSummary[] = visible.map((row) => ({
+    id: row.id,
+    title: row.title,
+    excerpt: createReviewExcerpt(row.content),
+    rating: row.rating,
+    publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),
+    status: row.status,
+    author: {
+      id: row.author.id,
+      username: row.author.username,
+      displayName: row.author.displayName ?? row.author.username,
+      avatarUrl: row.author.avatarUrl ?? null,
+    },
+    car: {
+      id: row.car.id,
+      make: row.car.make,
+      model: row.car.model,
+      year: row.car.year,
+      generation: row.car.generation,
+    },
+    stats: {
+      viewCount: row.viewCount,
+      likeCount: row.likeCount,
+      commentCount: row.commentCount,
+    },
+    likedByCurrentUser: likedReviewIds.has(row.id),
+  }));
+
+  const nextCursor = hasNext ? encodeLikedCursor(visible[visible.length - 1].likedAt as unknown as Date, visible[visible.length - 1].id) : null;
+
+  return { items, nextCursor };
+}
 export class ReviewPermissionError extends Error {}
 
 interface CreateReviewParams extends CreateReviewInput {

@@ -61,6 +61,9 @@ export function UserMenu({ user }: UserMenuProps) {
         <DropdownMenuItem asChild>
           <Link href={profileHref}>View profile</Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/profile/settings">Settings</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(event) => {

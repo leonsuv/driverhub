@@ -89,14 +89,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         if (token.id && typeof token.id === "string") {
           session.user.id = token.id;
-        }
+          // Fetch latest user data to keep avatar/name in sync across the app
+          const row = await db.query.users.findFirst({
+            where: (t, { eq }) => eq(t.id, token.id as string),
+            columns: { avatarUrl: true, displayName: true, username: true, role: true },
+          });
 
-        if (token.role && typeof token.role === "string") {
-          session.user.role = token.role as UserRole;
-        }
-
-        if (token.username && typeof token.username === "string") {
-          session.user.username = token.username;
+          if (row) {
+            session.user.image = row.avatarUrl ?? undefined;
+            session.user.name = row.displayName ?? row.username;
+            session.user.username = row.username;
+            session.user.role = row.role as UserRole;
+          }
         }
       }
 
