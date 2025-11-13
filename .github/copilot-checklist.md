@@ -83,6 +83,12 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [ ] User bookmarked reviews section
 - [x] User followers/following section
 - [ ] User liked comments section
+- [ ] Bookmark review in feed
+- [ ] Bookmark review in review detail page
+- [ ] Follow user in feed
+- [ ] Follow user in profile
+- [ ] Follow user in review detail page
+- [ ] Follow user in review list
 
 ## API Endpoints (tRPC Routers)
 - [x] Auth endpoints (register with password hashing, session management)

@@ -2,29 +2,29 @@
 
 import { Button } from "@/components/ui/button";
 import { ReviewCard } from "@/features/reviews/components/review-card";
-import { useUserLikedReviews } from "@/features/reviews/hooks/use-user-liked-reviews";
+import { useUserBookmarkedReviews } from "@/features/reviews/hooks/use-user-bookmarked-reviews";
 
-interface LikedReviewsSectionProps {
+interface BookmarkedReviewsSectionProps {
   userId: string;
 }
 
-export function LikedReviewsSection({ userId }: LikedReviewsSectionProps) {
-  const { data, isLoading, error, isFetching, loadMore } = useUserLikedReviews(userId);
+export function BookmarkedReviewsSection({ userId }: BookmarkedReviewsSectionProps) {
+  const { data, isLoading, error, isFetching, loadMore } = useUserBookmarkedReviews(userId);
 
-  if (isLoading) return <div>Loading liked reviews...</div>;
-  if (error) return <div>Failed to load liked reviews.</div>;
+  if (isLoading) return <div>Loading bookmarks...</div>;
+  if (error) return <div>Failed to load bookmarks.</div>;
 
   const items = data?.items ?? [];
 
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-semibold">Liked reviews</h2>
-        <p className="text-sm text-muted-foreground">Reviews you have liked.</p>
+        <h2 className="text-2xl font-semibold">Bookmarked reviews</h2>
+        <p className="text-sm text-muted-foreground">Your saved reviews.</p>
       </div>
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-          You haven&apos;t liked any reviews yet.
+          You haven&apos;t bookmarked any reviews yet.
         </div>
       ) : (
         <div className="space-y-4">

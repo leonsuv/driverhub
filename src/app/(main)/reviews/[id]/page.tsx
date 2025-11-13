@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ReviewLikeButton } from "@/features/reviews/components/review-like-button";
+import { ReviewBookmarkButton } from "@/features/reviews/components/review-bookmark-button";
 import { getPublishedReviewById } from "@/features/reviews/infrastructure/review.repository";
 import { ReviewCommentsSection } from "@/features/social/components/review-comments-section";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -71,6 +72,11 @@ export default async function ReviewDetailPage({ params }: ReviewPageProps) {
               initialLiked={review.likedByCurrentUser}
               initialLikeCount={review.stats.likeCount}
               canLike={Boolean(currentUser)}
+            />
+            <ReviewBookmarkButton
+              reviewId={review.id}
+              initialBookmarked={review.bookmarkedByCurrentUser ?? false}
+              canBookmark={Boolean(currentUser)}
             />
           </div>
         </header>

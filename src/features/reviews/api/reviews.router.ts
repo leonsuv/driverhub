@@ -7,7 +7,9 @@ import {
   getReviewByIdSchema,
   listReviewsInputSchema,
   listUserLikedReviewsInputSchema,
+  listUserBookmarkedReviewsInputSchema,
   toggleReviewLikeInputSchema,
+  toggleReviewBookmarkInputSchema,
   updateReviewSchema,
   updateReviewStatusSchema,
 } from "@/features/reviews/schemas/review-schemas";
@@ -18,8 +20,10 @@ import {
   incrementReviewViewCount,
   listLatestPublishedReviews,
   listUserLikedReviews,
+  listUserBookmarkedReviews,
   listReviews,
   toggleReviewLike,
+  toggleReviewBookmark,
   updateReview,
   updateReviewStatus,
   ReviewNotFoundError,
@@ -90,6 +94,26 @@ export const reviewsRouter = createTRPCRouter({
         cursor: input.cursor ?? null,
         currentUserId: ctx.user?.id ?? null,
       });
+    }),
+  userBookmarked: protectedProcedure
+    .input(listUserBookmarkedReviewsInputSchema)
+    .query(async ({ input, ctx }) => {
+      const limit = Math.min(Math.max(input.limit ?? 20, 1), 50);
+      // Only allow reading your own bookmarks for now
+      if (input.userId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return listUserBookmarkedReviews({
+        userId: input.userId,
+        limit,
+        cursor: input.cursor ?? null,
+        currentUserId: ctx.user.id,
+      });
+    }),
+  toggleBookmark: protectedProcedure
+    .input(toggleReviewBookmarkInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      return toggleReviewBookmark({ reviewId: input.reviewId, userId: ctx.user.id });
     }),
   getById: publicProcedure.input(getReviewByIdSchema).query(async ({ input, ctx }) => {
     const review = await getPublishedReviewById(input.id, ctx.user?.id);

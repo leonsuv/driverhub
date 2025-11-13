@@ -21,8 +21,168 @@ import {
   normalizeOptionalField,
   normalizeReviewSearchQuery,
 } from "@/features/reviews/domain/review.entity";
+import { bookmarks } from "@/lib/db/schema";
 
 export class ReviewNotFoundError extends Error {}
+export class ReviewPermissionError extends Error {}
+
+interface ToggleReviewBookmarkParams {
+  reviewId: number;
+  userId: string;
+}
+
+interface ToggleReviewBookmarkResult {
+  reviewId: number;
+  bookmarked: boolean;
+}
+
+export async function toggleReviewBookmark(
+  params: ToggleReviewBookmarkParams,
+): Promise<ToggleReviewBookmarkResult> {
+  return db.transaction(async (tx) => {
+    const existing = await tx.query.bookmarks.findFirst({
+      where: (t, { and, eq }) => and(eq(t.reviewId, params.reviewId), eq(t.userId, params.userId)),
+    });
+
+    if (existing) {
+      await tx.delete(bookmarks).where(and(eq(bookmarks.reviewId, params.reviewId), eq(bookmarks.userId, params.userId)));
+      return { reviewId: params.reviewId, bookmarked: false };
+    }
+
+    await tx
+      .insert(bookmarks)
+      .values({ reviewId: params.reviewId, userId: params.userId })
+      .onConflictDoNothing();
+
+    return { reviewId: params.reviewId, bookmarked: true };
+  });
+}
+
+interface ListUserBookmarkedReviewsParams {
+  userId: string;
+  limit: number;
+  cursor?: string | null;
+  currentUserId?: string | null;
+}
+
+interface ListUserBookmarkedReviewsResult {
+  items: ReviewSummary[];
+  nextCursor: string | null;
+}
+
+function encodeBookmarkCursor(createdAt: Date, reviewId: number) {
+  return Buffer.from(`${createdAt.toISOString()}::${reviewId}`).toString("base64");
+}
+
+function decodeBookmarkCursor(cursor?: string | null) {
+  if (!cursor) return null;
+  try {
+    const [iso, id] = Buffer.from(cursor, "base64").toString("utf8").split("::");
+    return { createdAt: new Date(iso), reviewId: Number(id) };
+  } catch {
+    return null;
+  }
+}
+
+export async function listUserBookmarkedReviews(
+  params: ListUserBookmarkedReviewsParams,
+): Promise<ListUserBookmarkedReviewsResult> {
+  const normalizedLimit = Math.min(Math.max(params.limit, 1), 50);
+  const decoded = decodeBookmarkCursor(params.cursor ?? null);
+
+  const rows = await db
+    .select({
+      id: reviews.id,
+      title: reviews.title,
+      content: reviews.content,
+      rating: reviews.rating,
+      status: reviews.status,
+      publishedAt: reviews.publishedAt,
+      createdAt: reviews.createdAt,
+      viewCount: reviews.viewCount,
+      likeCount: reviews.likeCount,
+      commentCount: reviews.commentCount,
+      author: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      car: {
+        id: cars.id,
+        make: cars.make,
+        model: cars.model,
+        year: cars.year,
+        generation: cars.generation,
+      },
+      bookmarkedAt: bookmarks.createdAt,
+    })
+    .from(bookmarks)
+    .innerJoin(reviews, and(eq(reviews.id, bookmarks.reviewId), eq(reviews.status, "published")))
+    .innerJoin(users, eq(users.id, reviews.authorId))
+    .innerJoin(cars, eq(cars.id, reviews.carId))
+    .where(
+      decoded
+        ? and(eq(bookmarks.userId, params.userId), lt(bookmarks.createdAt, decoded.createdAt))
+        : eq(bookmarks.userId, params.userId),
+    )
+    .orderBy(desc(bookmarks.createdAt))
+    .limit(normalizedLimit + 1);
+
+  const hasNext = rows.length > normalizedLimit;
+  const visible = hasNext ? rows.slice(0, normalizedLimit) : rows;
+
+  let likedReviewIds = new Set<number>();
+  let bookmarkedReviewIds = new Set<number>();
+  if (params.currentUserId) {
+    const likedRows = await db
+      .select({ reviewId: reviewLikes.reviewId })
+      .from(reviewLikes)
+      .where(and(eq(reviewLikes.userId, params.currentUserId), inArray(reviewLikes.reviewId, visible.map((r) => r.id))));
+    likedReviewIds = new Set(likedRows.map((r) => r.reviewId));
+
+    const bookmarkedRows = await db
+      .select({ reviewId: bookmarks.reviewId })
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, params.currentUserId), inArray(bookmarks.reviewId, visible.map((r) => r.id))));
+    bookmarkedReviewIds = new Set(bookmarkedRows.map((r) => r.reviewId));
+  }
+
+  const items: ReviewSummary[] = visible.map((row) => ({
+    id: row.id,
+    title: row.title,
+    excerpt: createReviewExcerpt(row.content),
+    rating: row.rating,
+    publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),
+    status: row.status,
+    author: {
+      id: row.author.id,
+      username: row.author.username,
+      displayName: row.author.displayName ?? row.author.username,
+      avatarUrl: row.author.avatarUrl ?? null,
+    },
+    car: {
+      id: row.car.id,
+      make: row.car.make,
+      model: row.car.model,
+      year: row.car.year,
+      generation: row.car.generation,
+    },
+    stats: {
+      viewCount: row.viewCount,
+      likeCount: row.likeCount,
+      commentCount: row.commentCount,
+    },
+    likedByCurrentUser: likedReviewIds.has(row.id),
+    bookmarkedByCurrentUser: bookmarkedReviewIds.has(row.id),
+  }));
+
+  const nextCursor = hasNext
+    ? encodeBookmarkCursor(visible[visible.length - 1].bookmarkedAt as unknown as Date, visible[visible.length - 1].id)
+    : null;
+
+  return { items, nextCursor };
+}
 
 interface ListUserLikedReviewsParams {
   userId: string;
@@ -133,13 +293,13 @@ export async function listUserLikedReviews(
       commentCount: row.commentCount,
     },
     likedByCurrentUser: likedReviewIds.has(row.id),
+    bookmarkedByCurrentUser: false,
   }));
 
   const nextCursor = hasNext ? encodeLikedCursor(visible[visible.length - 1].likedAt as unknown as Date, visible[visible.length - 1].id) : null;
 
   return { items, nextCursor };
 }
-export class ReviewPermissionError extends Error {}
 
 interface CreateReviewParams extends CreateReviewInput {
   authorId: string;
@@ -233,6 +393,7 @@ export async function listLatestPublishedReviews({
   const reviewIds = visibleRows.map((row) => row.review.id);
 
   let likedReviewIds = new Set<number>();
+  let bookmarkedReviewIds = new Set<number>();
 
   if (currentUserId && reviewIds.length > 0) {
     const likedRows = await db
@@ -241,6 +402,12 @@ export async function listLatestPublishedReviews({
       .where(and(eq(reviewLikes.userId, currentUserId), inArray(reviewLikes.reviewId, reviewIds)));
 
     likedReviewIds = new Set(likedRows.map((row) => row.reviewId));
+
+    const bookmarkedRows = await db
+      .select({ reviewId: bookmarks.reviewId })
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, currentUserId), inArray(bookmarks.reviewId, reviewIds)));
+    bookmarkedReviewIds = new Set(bookmarkedRows.map((row) => row.reviewId));
   }
 
   const items: ReviewSummary[] = visibleRows.map((row) => ({
@@ -269,6 +436,7 @@ export async function listLatestPublishedReviews({
       commentCount: row.review.commentCount,
     },
     likedByCurrentUser: likedReviewIds.has(row.review.id),
+    bookmarkedByCurrentUser: bookmarkedReviewIds.has(row.review.id),
   }));
 
   const nextCursor = hasNextPage ? rows[limit].review.id : null;
@@ -363,6 +531,7 @@ export async function listReviews({
   const reviewIds = visibleRows.map((row) => row.id);
 
   let likedReviewIds = new Set<number>();
+  let bookmarkedReviewIds = new Set<number>();
 
   if (currentUserId && reviewIds.length > 0) {
     const likedRows = await db
@@ -371,6 +540,12 @@ export async function listReviews({
       .where(and(eq(reviewLikes.userId, currentUserId), inArray(reviewLikes.reviewId, reviewIds)));
 
     likedReviewIds = new Set(likedRows.map((row) => row.reviewId));
+
+    const bookmarkedRows = await db
+      .select({ reviewId: bookmarks.reviewId })
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, currentUserId), inArray(bookmarks.reviewId, reviewIds)));
+    bookmarkedReviewIds = new Set(bookmarkedRows.map((row) => row.reviewId));
   }
 
   const items: ReviewSummary[] = visibleRows.map((row) => ({
@@ -399,6 +574,7 @@ export async function listReviews({
       commentCount: row.commentCount,
     },
     likedByCurrentUser: likedReviewIds.has(row.id),
+    bookmarkedByCurrentUser: bookmarkedReviewIds.has(row.id),
   }));
 
   const nextCursor = hasNextPage ? rows[normalizedLimit].id : null;
@@ -447,6 +623,7 @@ export async function listPublishedReviewsByCar({
 
   const reviewIds = rows.map((row) => row.review.id);
   let likedReviewIds = new Set<number>();
+  let bookmarkedReviewIds = new Set<number>();
 
   if (currentUserId && reviewIds.length > 0) {
 	const likedRows = await db
@@ -455,6 +632,12 @@ export async function listPublishedReviewsByCar({
 		.where(and(eq(reviewLikes.userId, currentUserId), inArray(reviewLikes.reviewId, reviewIds)));
 
 	likedReviewIds = new Set(likedRows.map((row) => row.reviewId));
+
+    const bookmarkedRows = await db
+      .select({ reviewId: bookmarks.reviewId })
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, currentUserId), inArray(bookmarks.reviewId, reviewIds)));
+    bookmarkedReviewIds = new Set(bookmarkedRows.map((row) => row.reviewId));
   }
 
   const items: ReviewSummary[] = rows.map((row) => ({
@@ -483,6 +666,7 @@ export async function listPublishedReviewsByCar({
 		commentCount: row.review.commentCount,
 	},
 	likedByCurrentUser: likedReviewIds.has(row.review.id),
+    bookmarkedByCurrentUser: bookmarkedReviewIds.has(row.review.id),
   }));
 
   return items;
@@ -519,6 +703,7 @@ export async function getPublishedReviewById(
     const nextViewCount = record.viewCount + 1;
 
     let likedByCurrentUser = false;
+    let bookmarkedByCurrentUser = false;
 
     if (currentUserId) {
       const existingLike = await tx.query.reviewLikes.findFirst({
@@ -530,6 +715,15 @@ export async function getPublishedReviewById(
       });
 
       likedByCurrentUser = Boolean(existingLike);
+
+      const existingBookmark = await tx.query.bookmarks.findFirst({
+        where: (table, operators) =>
+          operators.and(
+            operators.eq(table.reviewId, record.id),
+            operators.eq(table.userId, currentUserId),
+          ),
+      });
+      bookmarkedByCurrentUser = Boolean(existingBookmark);
     }
 
     return {
@@ -561,6 +755,7 @@ export async function getPublishedReviewById(
       },
       status: record.status,
       likedByCurrentUser,
+      bookmarkedByCurrentUser,
       media: record.media.map((item) => ({
         id: item.id,
         url: item.url,

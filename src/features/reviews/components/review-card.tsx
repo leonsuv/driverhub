@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { formatRelativeDate } from "@/lib/utils/date";
 import type { ReviewSummary } from "@/features/reviews/types";
+import { ReviewBookmarkButton } from "@/features/reviews/components/review-bookmark-button";
 
 interface ReviewCardProps {
   review: ReviewSummary;
@@ -50,6 +51,12 @@ export function ReviewCard({ review }: ReviewCardProps) {
         <span>Views: {review.stats.viewCount}</span>
         <span>Likes: {review.stats.likeCount}</span>
         <span>Comments: {review.stats.commentCount}</span>
+        <div className="ml-auto">
+          <ReviewBookmarkButton
+            reviewId={review.id}
+            initialBookmarked={review.bookmarkedByCurrentUser ?? false}
+          />
+        </div>
       </CardFooter>
     </Card>
   );

@@ -110,6 +110,16 @@ export const listUserLikedReviewsInputSchema = z.object({
   cursor: z.string().optional(),
 });
 
+export const toggleReviewBookmarkInputSchema = z.object({
+  reviewId: z.number().int().positive(),
+});
+
+export const listUserBookmarkedReviewsInputSchema = z.object({
+  userId: z.string().trim().min(1),
+  limit: z.number().int().min(1).max(50).optional(),
+  cursor: z.string().optional(),
+});
+
 export const deleteReviewSchema = z.object({
   reviewId: z.number().int().positive(),
 });
@@ -126,6 +136,8 @@ export type GetReviewByIdSchema = z.infer<typeof getReviewByIdSchema>;
 export type CreateReviewMediaInputSchema = z.infer<typeof createReviewMediaInputSchema>;
 export type ToggleReviewLikeInputSchema = z.infer<typeof toggleReviewLikeInputSchema>;
 export type ListUserLikedReviewsInputSchema = z.infer<typeof listUserLikedReviewsInputSchema>;
+export type ToggleReviewBookmarkInputSchema = z.infer<typeof toggleReviewBookmarkInputSchema>;
+export type ListUserBookmarkedReviewsInputSchema = z.infer<typeof listUserBookmarkedReviewsInputSchema>;
 export type UpdateReviewSchema = z.infer<typeof updateReviewSchema>;
 export type DeleteReviewSchema = z.infer<typeof deleteReviewSchema>;
 export type ReviewStatusSchema = z.infer<typeof reviewStatusSchema>;

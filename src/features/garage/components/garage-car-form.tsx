@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useGarage } from "@/features/garage/hooks/use-garage";
 import { addGarageCarInputSchema } from "@/features/garage/schemas/garage-schemas";
 import type { CarSummary } from "@/features/cars/types";
+import { toast } from "sonner";
 
 type FormValues = z.infer<typeof addGarageCarInputSchema>;
 
@@ -56,7 +57,7 @@ export function GarageCarForm({ cars }: GarageCarFormProps) {
       form.setValue("imageUrl", data.url, { shouldDirty: true });
       setPreviewUrl(data.url);
     } catch (_e) {
-      // swallow error, UI remains unchanged
+      toast.error("Failed to upload image");
     } finally {
       setIsUploading(false);
       event.target.value = "";

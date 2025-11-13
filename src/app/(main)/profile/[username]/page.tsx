@@ -10,6 +10,7 @@ import { getUserProfileByUsername } from "@/features/users/infrastructure/user.r
 import { getCurrentUser } from "@/lib/auth/session";
 import { FollowersList, FollowingList } from "@/features/social/components/follow-lists";
 import { LikedReviewsSection } from "@/features/reviews/components/liked-reviews-section";
+import { BookmarkedReviewsSection } from "@/features/reviews/components/bookmarked-reviews-section";
 import { countFollowers, countFollowing } from "@/features/social/infrastructure/follow.repository";
 
 interface ProfilePageProps {
@@ -59,7 +60,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         <a href="#followers" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Followers</a>
         <a href="#following" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Following</a>
         {isOwner ? (
-          <a href="#liked" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Liked</a>
+          <>
+            <a href="#liked" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Liked</a>
+            <a href="#bookmarked" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Bookmarked</a>
+          </>
         ) : null}
       </nav>
 
@@ -102,8 +106,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       </section>
 
       {isOwner ? (
-        <div id="liked">
-          <LikedReviewsSection userId={profile.id} />
+        <div className="space-y-8">
+          <div id="liked">
+            <LikedReviewsSection userId={profile.id} />
+          </div>
+          <div id="bookmarked">
+            <BookmarkedReviewsSection userId={profile.id} />
+          </div>
         </div>
       ) : null}
 

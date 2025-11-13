@@ -32,6 +32,7 @@ export interface ReviewSummary {
 	car: ReviewCarSummary;
 	stats: ReviewStats;
 	likedByCurrentUser: boolean;
+	bookmarkedByCurrentUser?: boolean;
 }
 
 export interface ReviewMediaItem {
