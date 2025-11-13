@@ -83,8 +83,8 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [ ] User bookmarked reviews section
 - [x] User followers/following section
 - [ ] User liked comments section
-- [ ] Bookmark review in feed
-- [ ] Bookmark review in review detail page
+- [x] Bookmark review in feed
+- [x] Bookmark review in review detail page
 - [ ] Follow user in feed
 - [ ] Follow user in profile
 - [ ] Follow user in review detail page
@@ -99,9 +99,8 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [x] Follows (toggle, get followers/following)
 - [ ] Users (profile, stats, update, search)
 - [x] Garage (get/add/update/remove cars)
-- [ ] Feed (get personalized, latest, trending)
-- [ ] Bookmarks (get/add/remove)
-
+- [x] Feed (get personalized, latest, trending)
+- [x] Bookmarks (get/add/remove)
 
 ## Real-Time Features
 - [ ] Implement tRPC Server-Sent Events (SSE) for notifications
