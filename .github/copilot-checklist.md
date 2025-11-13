@@ -6,14 +6,14 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - [x] Create project repo and directory structure (see prompt.md)
 - [x] Add prompt.md with full specification (self-hosted version)
 - [x] Set up environment variables (`.env.example`, `.env.local`)
-- [ ] Setup local PostgreSQL database (Docker or bare metal)
+- [x] Setup local PostgreSQL database (Docker or bare metal)
 
 ## Project Setup
 - [x] Initialize Next.js 15 (App Router, TypeScript, Tailwind v4, pnpm)
 - [x] Initialize shadcn/ui, install required components
 - [x] Install all dependencies (tRPC v11, Drizzle, NextAuth.js v5, bcryptjs, React Hook Form, Zod)
 - [x] Remove any Supabase dependencies (if accidentally installed)
-- [ ] Create initial commit with setup files
+- [x] Create initial commit with setup files
 
 ## Infrastructure
 - [x] Create Drizzle ORM config and schema files
@@ -61,29 +61,27 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 
 ## Feature Slices (Vertical Slice Architecture)
 - [x] Auth: Implement feature folder, tRPC router, components, hooks, domain/entities
-- [ ] Reviews: Implement feature folder, router, repository, domain logic, components, hooks
-- [ ] Cars (catalog): Implement feature folder, router, repository, domain/entities, components, hooks
+- [x] Reviews: Implement feature folder, router, repository, domain logic, components, hooks
+- [x] Cars (catalog): Implement feature folder, router, repository, domain/entities, components, hooks
 - [ ] Social (comments/likes/follows): Implement feature folder, router, repository, domain/entities, components
-- [ ] Users (profile): Implement feature folder, router, repository, domain/entities, components
+- [x] Users (profile): Implement feature folder, router, repository, domain/entities, components
 - [ ] Garage: Implement feature folder, router, repository, domain/entities, components
 - [x] Feed: Implement feature folder, feed service, router, repository, domain logic, components
 
 ## UI Implementation
-- [ ] Shared UI folder: import and customize shadcn/ui components
+- [x] Shared UI folder: import and customize shadcn/ui components
 - [x] Implement main layout/navigation/header/footer
 - [x] Create auth forms (login, register) with NextAuth integration
 - [x] Home/feed page with review listing
 - [x] Car catalog and detail pages
-- [ ] Review creation form with image upload
 - [x] Review creation form with image upload
 - [x] Review detail page with comments
-- [ ] User profile pages
+- [x] User profile pages
 - [ ] Garage management UI
 ## API Endpoints (tRPC Routers)
 - [x] Auth endpoints (register with password hashing, session management)
-- [ ] Reviews endpoints (list, details, create, update, delete, increment view, filter)
-- [ ] Car endpoints (list, catalog, search, filter, makes/models)
-- [ ] Comments (create, get, update, delete, replies)
+- [x] Reviews endpoints (list, details, create, update, delete, increment view, filter)
+- [x] Car endpoints (list, catalog, search, filter, makes/models)
 - [x] Comments (create, get, update, delete, replies)
 - [ ] Likes (toggle, get, user likes)
 - [ ] Follows (toggle, get followers/following)
@@ -108,16 +106,16 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 
 ## Security & Quality
 - [ ] Verify bcrypt password hashing works correctly
-- [ ] Add auth middleware and protect sensitive endpoints
+- [x] Add auth middleware and protect sensitive endpoints
 - [ ] Implement rate limiting on auth endpoints
-- [ ] Validate file uploads (prevent malicious files)
+- [x] Validate file uploads (prevent malicious files)
 - [ ] Error handling: throw and catch errors in all mutations
 - [ ] Display user-friendly error states in UI
 - [ ] Implement loading skeletons for all pages
-- [ ] Paginate and sort all major lists
-- [ ] Use React Server Components where possible
+- [x] Paginate and sort all major lists
+- [x] Use React Server Components where possible
 - [ ] Optimize images, lazy loading
-- [ ] Ensure TypeScript strict mode everywhere
+- [x] Ensure TypeScript strict mode everywhere
 - [ ] Review and secure all tRPC procedures
 
 ## Performance & Optimization
@@ -152,8 +150,8 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 ## Self-Hosted Specific Checklist
 
 ### PostgreSQL Setup
-- [ ] Install PostgreSQL 16 (Docker or native)
-- [ ] Create database: `drive2_clone`
+- [x] Install PostgreSQL 16 (Docker or native)
+- [x] Create database: `drivers`
 - [x] Configure DATABASE_URL in .env.local
 - [x] Test connection from Drizzle
 - [ ] Setup automated backups
@@ -188,7 +186,7 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 
 ### Database Connection
 - DATABASE_URL format: `postgresql://user:password@host:port/database`
-- Example: `postgresql://postgres:mypassword@localhost:5432/drive2_clone`
+- Example: `postgresql://postgres:mypassword@localhost:5439/drivers`
 
 ### NextAuth Notes
 - NextAuth v5 uses App Router and Server Actions
@@ -218,6 +216,10 @@ This checklist helps you and Copilot track progress across the **entire Drive2.r
 - Comment UI uses reusable actions component with prefilled edit state and consistent error handling
 - Review comments section wired to new create/update/delete mutations with optimistic invalidation
 - Added comment like toggle (tRPC mutation, repository, UI) with current-user state tracking
+- Review likes implemented end-to-end (repository, tRPC, client button) with personalized liked state across feed, detail, and car pages
+- Cars catalog slice now centralizes domain mapping/search helpers, exposes catalog hook, and powers infinite browsing UI via tRPC
+- Reviews router now includes filtered listings, update/delete mutations, and a dedicated view increment endpoint
+- User profiles deliver public stats, published reviews, and owner-only draft management with publish/delete actions
 
 ### Deployment Notes
 - Docker Compose includes PostgreSQL + App

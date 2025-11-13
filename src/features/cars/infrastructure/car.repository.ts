@@ -3,9 +3,14 @@ import { SQL, asc, desc, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { cars } from "@/lib/db/schema";
 import {
+  createCarListItem,
+  createCarSearchPattern,
+  createCarSummary,
+  normalizeCarSearchQuery,
+} from "@/features/cars/domain/car.entity";
+import {
   CarListItem,
   CarModelDetail,
-  CarSpecs,
   CarSummary,
   ListCarsParams,
   ListCarsResult,
@@ -23,12 +28,12 @@ export async function listAllCars(): Promise<CarSummary[]> {
     .from(cars)
     .orderBy(asc(cars.make), asc(cars.model), desc(cars.year));
 
-  return rows;
+  return rows.map(createCarSummary);
 }
 
 export async function listCars(params: ListCarsParams): Promise<ListCarsResult> {
   const limit = Math.min(Math.max(params.limit, 1), 50);
-  const queryTerm = params.query?.trim();
+  const normalizedQuery = normalizeCarSearchQuery(params.query);
 
   const rows = await db.query.cars.findMany({
     columns: {
@@ -43,7 +48,7 @@ export async function listCars(params: ListCarsParams): Promise<ListCarsResult> 
     limit: limit + 1,
     orderBy: (carsTable, { desc }) => [desc(carsTable.id)],
     where:
-      params.cursor || queryTerm
+      params.cursor || normalizedQuery
         ? (carsTable, operators) => {
             const clauses: SQL[] = [];
 
@@ -51,20 +56,13 @@ export async function listCars(params: ListCarsParams): Promise<ListCarsResult> 
               clauses.push(operators.lt(carsTable.id, params.cursor));
             }
 
-            if (queryTerm) {
-              const sanitized = queryTerm.replace(/[\\%_]/g, "\\$&");
-              const search = `%${sanitized}%`;
-              const searchFilters = [
-                operators.ilike(carsTable.make, search),
-                operators.ilike(carsTable.model, search),
-                sql`coalesce(${carsTable.generation}, '') ILIKE ${search}`,
-              ].filter((expression): expression is SQL => expression !== undefined);
-
-              let searchCondition: SQL | undefined;
-
-              for (const filter of searchFilters) {
-                searchCondition = searchCondition ? operators.or(searchCondition, filter) : filter;
-              }
+            if (normalizedQuery) {
+              const pattern = createCarSearchPattern(normalizedQuery);
+              const searchCondition = operators.or(
+                operators.ilike(carsTable.make, pattern),
+                operators.ilike(carsTable.model, pattern),
+                sql`coalesce(${carsTable.generation}, '') ILIKE ${pattern}`,
+              );
 
               if (searchCondition) {
                 clauses.push(searchCondition);
@@ -87,15 +85,17 @@ export async function listCars(params: ListCarsParams): Promise<ListCarsResult> 
   const hasNextPage = rows.length > limit;
   const visibleRows = hasNextPage ? rows.slice(0, limit) : rows;
 
-  const items: CarListItem[] = visibleRows.map((row) => ({
-    id: row.id,
-    make: row.make,
-    model: row.model,
-    year: row.year,
-    generation: row.generation,
-    imageUrl: row.imageUrl,
-    specs: (row.specs as CarSpecs | null) ?? null,
-  }));
+  const items: CarListItem[] = visibleRows.map((row) =>
+    createCarListItem({
+      id: row.id,
+      make: row.make,
+      model: row.model,
+      year: row.year,
+      generation: row.generation,
+      imageUrl: row.imageUrl,
+      specs: row.specs,
+    }),
+  );
 
   const nextCursor = hasNextPage ? rows[limit].id : null;
 
@@ -124,15 +124,17 @@ export async function getCarModelDetail(make: string, model: string): Promise<Ca
     return null;
   }
 
-  const variants: CarListItem[] = rows.map((row) => ({
-    id: row.id,
-    make: row.make,
-    model: row.model,
-    year: row.year,
-    generation: row.generation,
-    imageUrl: row.imageUrl,
-    specs: (row.specs as CarSpecs | null) ?? null,
-  }));
+  const variants: CarListItem[] = rows.map((row) =>
+    createCarListItem({
+      id: row.id,
+      make: row.make,
+      model: row.model,
+      year: row.year,
+      generation: row.generation,
+      imageUrl: row.imageUrl,
+      specs: row.specs,
+    }),
+  );
 
   return {
     make: variants[0].make,

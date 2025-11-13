@@ -3,12 +3,12 @@ import { listReviewsInputSchema } from "@/features/reviews/schemas/review-schema
 import { getLatestFeed } from "@/features/feed/infrastructure/feed.repository";
 
 export const feedRouter = createTRPCRouter({
-  latest: publicProcedure
-    .input(listReviewsInputSchema.optional())
-    .query(async ({ input }) => {
-      const limit = Math.min(Math.max(input?.limit ?? 10, 1), 50);
-      const cursor = input?.cursor;
+	latest: publicProcedure
+		.input(listReviewsInputSchema.optional())
+		.query(async ({ input, ctx }) => {
+			const limit = Math.min(Math.max(input?.limit ?? 10, 1), 50);
+			const cursor = input?.cursor;
 
-      return getLatestFeed({ limit, cursor });
-    }),
+			return getLatestFeed({ limit, cursor, currentUserId: ctx.user?.id });
+		}),
 });

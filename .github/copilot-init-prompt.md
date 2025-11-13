@@ -38,7 +38,7 @@ pnpm dlx shadcn@latest add button input textarea card dialog dropdown-menu avata
 Create `.env.local` with self-hosted configuration:
 ```env
 # Database
-DATABASE_URL=postgresql://postgres:password@localhost:5432/drive2_clone
+DATABASE_URL=postgresql://postgres:password@localhost:5439/drivers
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000

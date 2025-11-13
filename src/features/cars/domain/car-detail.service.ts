@@ -4,6 +4,7 @@ import type { CarDetailWithReviews } from "@/features/cars/types";
 
 interface GetCarDetailWithReviewsOptions {
 	reviewLimit?: number;
+	currentUserId?: string | null;
 }
 
 export async function getCarDetailWithReviews(
@@ -18,7 +19,11 @@ export async function getCarDetailWithReviews(
 	}
 
 	const reviewLimit = options.reviewLimit ?? 3;
-	const reviews = await listPublishedReviewsByCar({ carId: detail.latest.id, limit: reviewLimit });
+	const reviews = await listPublishedReviewsByCar({
+		carId: detail.latest.id,
+		limit: reviewLimit,
+		currentUserId: options.currentUserId,
+	});
 
 	return {
 		detail,

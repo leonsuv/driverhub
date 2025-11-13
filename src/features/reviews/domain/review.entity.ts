@@ -1,4 +1,5 @@
 const DEFAULT_EXCERPT_LENGTH = 220;
+const LIKE_SPECIAL_CHARACTERS = /[%_\\]/g;
 
 export function createReviewExcerpt(content: string, maxLength = DEFAULT_EXCERPT_LENGTH) {
   const normalized = content.replace(/\s+/g, " ").trim();
@@ -17,4 +18,26 @@ export function normalizeOptionalField(value: string | null | undefined) {
 
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;
+}
+
+export function normalizeReviewSearchQuery(query: string | undefined | null): string | undefined {
+  if (!query) {
+    return undefined;
+  }
+
+  const trimmed = query.trim();
+
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+
+  return trimmed.replace(/\s+/g, " ");
+}
+
+export function escapeReviewSearchTerm(term: string): string {
+  return term.replace(LIKE_SPECIAL_CHARACTERS, "\\$&");
+}
+
+export function createReviewSearchPattern(term: string): string {
+  return `%${escapeReviewSearchTerm(term)}%`;
 }

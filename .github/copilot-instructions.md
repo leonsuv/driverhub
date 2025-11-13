@@ -59,7 +59,7 @@ Each feature in `src/features/[feature-name]/` contains:
 ## Environment Variables
 
 ```env
-DATABASE_URL=postgresql://user:pass@host:5432/db
+DATABASE_URL=postgresql://user:pass@host:5439/drivers
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=generated-secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000

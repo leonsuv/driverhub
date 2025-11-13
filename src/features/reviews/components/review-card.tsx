@@ -39,6 +39,11 @@ export function ReviewCard({ review }: ReviewCardProps) {
         <p className="text-muted-foreground text-sm leading-relaxed">{review.excerpt}</p>
       </CardContent>
       <CardFooter className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        {review.likedByCurrentUser ? (
+          <span className="rounded-full bg-rose-100 px-3 py-1 text-rose-600 font-medium">
+            Liked
+          </span>
+        ) : null}
         <span className="rounded-full bg-primary/10 px-3 py-1 text-primary font-medium">
           {review.rating}/10
         </span>

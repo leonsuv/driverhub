@@ -278,7 +278,7 @@ export const reviewsRelations = relations(reviews, ({ one, many }) => ({
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Database (Self-hosted PostgreSQL)
-DATABASE_URL=postgresql://username:password@localhost:5432/drive2_clone
+DATABASE_URL=postgresql://username:password@localhost:5439/drivers
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
@@ -436,16 +436,16 @@ pnpm add -D @types/node tsx
 ### Phase 1: Database Setup
 1. **Install PostgreSQL locally** (or use Docker):
    ```bash
-   docker run -d --name drive2-postgres \
+   docker run -d --name drivers-postgres \
      -e POSTGRES_PASSWORD=yourpassword \
-     -e POSTGRES_DB=drive2_clone \
-     -p 5432:5432 \
+     -e POSTGRES_DB=drivers \
+     -p 5439:5439 \
      postgres:16
    ```
 
 2. **Create `.env.local`** with your database connection:
    ```env
-   DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/drive2_clone
+   DATABASE_URL=postgresql://postgres:yourpassword@localhost:5439/drivers
    NEXTAUTH_SECRET=$(openssl rand -base64 32)
    NEXTAUTH_URL=http://localhost:3000
    ```
@@ -497,19 +497,19 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_DB: drive2_clone
+      POSTGRES_DB: drivers
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5439:5439"
 
   app:
     build: .
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@postgres:5432/drive2_clone
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@postgres:5439/drivers
       NEXTAUTH_URL: https://yourdomain.com
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
     volumes:

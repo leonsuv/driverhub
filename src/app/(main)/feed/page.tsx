@@ -3,9 +3,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FeedPageClient } from "@/features/feed/components/feed-page-client";
 import { getLatestFeed } from "@/features/feed/infrastructure/feed.repository";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export default async function FeedPage() {
-  const initialFeed = await getLatestFeed({ limit: 10 });
+  const currentUser = await getCurrentUser();
+  const initialFeed = await getLatestFeed({ limit: 10, currentUserId: currentUser?.id ?? null });
 
   return (
     <div className="flex flex-col gap-8">

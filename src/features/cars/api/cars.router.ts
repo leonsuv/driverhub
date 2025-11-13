@@ -19,9 +19,10 @@ export const carsRouter = createTRPCRouter({
         query: query && query.length > 0 ? query : undefined,
       });
     }),
-  detail: publicProcedure.input(carDetailInputSchema).query(async ({ input }) => {
+  detail: publicProcedure.input(carDetailInputSchema).query(async ({ input, ctx }) => {
     const result = await getCarDetailWithReviews(input.make, input.model, {
       reviewLimit: input.reviewLimit ?? 5,
+      currentUserId: ctx.user?.id,
     });
 
     if (!result) {

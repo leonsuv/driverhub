@@ -1,3 +1,5 @@
+export type ReviewStatus = "draft" | "published" | "archived";
+
 export interface ReviewAuthorSummary {
 	id: string;
 	username: string;
@@ -25,9 +27,11 @@ export interface ReviewSummary {
 	excerpt: string;
 	rating: number;
 	publishedAt: string;
+	status: ReviewStatus;
 	author: ReviewAuthorSummary;
 	car: ReviewCarSummary;
 	stats: ReviewStats;
+	likedByCurrentUser: boolean;
 }
 
 export interface ReviewMediaItem {
@@ -62,9 +66,39 @@ export interface CreateReviewInput {
 	media?: CreateReviewMediaInput[];
 }
 
+export interface UpdateReviewInput extends CreateReviewInput {
+	reviewId: number;
+	status?: ReviewStatus;
+}
+
+export interface ReviewListFilters {
+	authorId?: string;
+	carId?: number;
+	status?: ReviewStatus | ReviewStatus[];
+	query?: string;
+}
+
+export interface ReviewUpdateResult {
+	id: number;
+	status: ReviewStatus;
+	publishedAt: string | null;
+	updatedAt: string;
+}
+
+export interface ReviewDeletionResult {
+	id: number;
+}
+
+export interface IncrementReviewViewResult {
+	reviewId: number;
+	viewCount: number;
+}
+
 export interface ListReviewsParams {
 	limit: number;
 	cursor?: number;
+	currentUserId?: string | null;
+	filters?: ReviewListFilters;
 }
 
 export interface ListReviewsResult {

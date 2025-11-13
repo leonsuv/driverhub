@@ -1,12 +1,13 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CarList } from "@/features/cars/components/car-list";
+import { normalizeCarSearchQuery } from "@/features/cars/domain/car.entity";
+import { useCarsCatalog } from "@/features/cars/hooks/use-cars-catalog";
 import type { ListCarsResult } from "@/features/cars/types";
-import { trpc } from "@/lib/trpc/client";
 
 const PAGE_SIZE = 12;
 
@@ -18,30 +19,16 @@ interface CarsPageClientProps {
 export function CarsPageClient({ initialData, initialQuery }: CarsPageClientProps) {
   const [searchTerm, setSearchTerm] = useState(initialQuery ?? "");
   const deferredQuery = useDeferredValue(searchTerm);
-  const normalizedInitial = initialQuery?.trim() ?? "";
-  const normalizedQuery = deferredQuery.trim();
-  const shouldUseInitial = normalizedQuery === normalizedInitial;
+  const normalizedInitial = normalizeCarSearchQuery(initialQuery) ?? "";
+  const normalizedDeferred = normalizeCarSearchQuery(deferredQuery) ?? "";
+  const shouldUseInitial = normalizedDeferred === normalizedInitial;
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = trpc.cars.list.useInfiniteQuery(
-    { limit: PAGE_SIZE, query: normalizedQuery.length ? normalizedQuery : undefined },
-    {
-      initialData: shouldUseInitial
-        ? {
-            pages: [initialData],
-            pageParams: [undefined],
-          }
-        : undefined,
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    },
-  );
+  const { items, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useCarsCatalog({
+    query: deferredQuery,
+    limit: PAGE_SIZE,
+    initialData: shouldUseInitial ? initialData : undefined,
+  });
 
-  const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
   const showInitialSkeleton = isLoading && items.length === 0;
 
   return (

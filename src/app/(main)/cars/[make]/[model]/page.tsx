@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CarDetailView } from "@/features/cars/components/car-detail-view";
 import { getCarDetailWithReviews } from "@/features/cars/domain/car-detail.service";
+import { getCurrentUser } from "@/lib/auth/session";
 
 interface CarModelPageProps {
   params: Promise<{
@@ -14,7 +15,11 @@ interface CarModelPageProps {
 
 export default async function CarModelPage({ params }: CarModelPageProps) {
   const { make, model } = await params;
-  const result = await getCarDetailWithReviews(make, model, { reviewLimit: 3 });
+  const currentUser = await getCurrentUser();
+  const result = await getCarDetailWithReviews(make, model, {
+    reviewLimit: 3,
+    currentUserId: currentUser?.id ?? null,
+  });
 
   if (!result) {
     notFound();

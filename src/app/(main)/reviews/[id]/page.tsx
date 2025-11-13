@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ReviewLikeButton } from "@/features/reviews/components/review-like-button";
 import { getPublishedReviewById } from "@/features/reviews/infrastructure/review.repository";
 import { ReviewCommentsSection } from "@/features/social/components/review-comments-section";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -23,8 +24,8 @@ export default async function ReviewDetailPage({ params }: ReviewPageProps) {
     notFound();
   }
 
-  const review = await getPublishedReviewById(reviewId);
   const currentUser = await getCurrentUser();
+  const review = await getPublishedReviewById(reviewId, currentUser?.id ?? null);
 
   if (!review) {
     notFound();
@@ -61,9 +62,16 @@ export default async function ReviewDetailPage({ params }: ReviewPageProps) {
             </span>
             <span>- By {review.author.displayName}</span>
             <span>- Rating {review.rating}/10</span>
-            <span>- Views {review.stats.viewCount}</span>
-            <span>- Likes {review.stats.likeCount}</span>
-            <span>- Comments {review.stats.commentCount}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <span>Views {review.stats.viewCount}</span>
+            <span>Comments {review.stats.commentCount}</span>
+            <ReviewLikeButton
+              reviewId={review.id}
+              initialLiked={review.likedByCurrentUser}
+              initialLikeCount={review.stats.likeCount}
+              canLike={Boolean(currentUser)}
+            />
           </div>
         </header>
         {review.media.length > 0 ? (
