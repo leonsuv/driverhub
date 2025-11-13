@@ -4,6 +4,9 @@
 /node_modules
 /.pnp
 .pnp.*
+.env.local
+public/uploads/*
+!public/uploads/.gitkeep
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
