@@ -32,6 +32,10 @@ export function GarageCarForm({ cars }: GarageCarFormProps) {
       modifications: "",
       imageUrl: "",
       purchaseDate: "",
+      vin: "",
+      engineCode: "",
+      colorCode: "",
+      trim: "",
     },
   });
 
@@ -76,6 +80,10 @@ export function GarageCarForm({ cars }: GarageCarFormProps) {
         mileage: typeof values.mileage === "number" && !Number.isNaN(values.mileage)
           ? values.mileage
           : undefined,
+        vin: values.vin ? values.vin : undefined,
+        engineCode: values.engineCode ? values.engineCode : undefined,
+        colorCode: values.colorCode ? values.colorCode : undefined,
+        trim: values.trim ? values.trim : undefined,
       },
       { onSuccess: () => form.reset() },
     );
@@ -202,10 +210,89 @@ export function GarageCarForm({ cars }: GarageCarFormProps) {
               name="purchaseDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Purchase Date</FormLabel>
+                  <FormLabel>Purchase date</FormLabel>
                   <FormControl>
                     <Input type="date" value={field.value ?? ""} onChange={field.onChange} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="vin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>VIN</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Vehicle Identification Number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="engineCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Engine code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. B58, 2JZ-GTE" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="colorCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Color code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. 300 Arctic White" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="trim"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trim</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Sport, Limited" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vehicle status</FormLabel>
+                  <Select
+                    value={field.value ?? "daily"}
+                    onValueChange={(val) => field.onChange(val)}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="project">Project</SelectItem>
+                      <SelectItem value="sold">Sold</SelectItem>
+                      <SelectItem value="wrecked">Wrecked</SelectItem>
+                      <SelectItem value="hidden">Hidden</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

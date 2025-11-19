@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Separator } from "@/components/ui/separator";
 import { ReviewLikeButton } from "@/features/reviews/components/review-like-button";
 import { ReviewBookmarkButton } from "@/features/reviews/components/review-bookmark-button";
 import { getPublishedReviewById } from "@/features/reviews/infrastructure/review.repository";
 import { ReviewCommentsSection } from "@/features/social/components/review-comments-section";
+import { FollowButton } from "@/features/social/components/follow-button";
 import { getCurrentUser } from "@/lib/auth/session";
 import { formatDate, formatRelativeDate } from "@/lib/utils/date";
 
@@ -47,6 +49,7 @@ export default async function ReviewDetailPage({ params }: ReviewPageProps) {
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-10">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Feed", href: "/feed" }, { label: review.title }]} />
       <Button asChild variant="outline" className="self-start">
         <Link href="/feed">Back to feed</Link>
       </Button>
@@ -61,12 +64,17 @@ export default async function ReviewDetailPage({ params }: ReviewPageProps) {
               {review.car.year} {review.car.make} {review.car.model}
               {review.car.generation ? ` - ${review.car.generation}` : ""}
             </span>
-            <span>- By {review.author.displayName}</span>
+            <span>
+              - By <Link href={`/profile/${review.author.username}`} className="hover:underline">{review.author.displayName}</Link>
+            </span>
             <span>- Rating {review.rating}/10</span>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span>Views {review.stats.viewCount}</span>
             <span>Comments {review.stats.commentCount}</span>
+            {currentUser && currentUser.id !== review.author.id ? (
+              <FollowButton targetUserId={review.author.id} />
+            ) : null}
             <ReviewLikeButton
               reviewId={review.id}
               initialLiked={review.likedByCurrentUser}

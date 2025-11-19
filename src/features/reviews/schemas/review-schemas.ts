@@ -129,6 +129,42 @@ export const updateReviewStatusSchema = z.object({
   status: reviewStatusSchema,
 });
 
+// Drafts
+const draftMediaInputSchema = z.object({
+  url: z.string().url("Invalid media URL"),
+  type: mediaTypeSchema,
+  altText: z.string().trim().max(200).nullable().optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+export const createDraftSchema = z.object({
+  carId: z.number().int().positive("Select a car"),
+  title: z.string().trim().max(200).optional(),
+});
+
+export const updateDraftSchema = z.object({
+  reviewId: z.number().int().positive(),
+  carId: z.number().int().positive().optional(),
+  title: z.string().trim().max(200).optional(),
+  content: z.string().trim().max(20000).optional(),
+  rating: z.number().int().min(1).max(10).optional(),
+  pros: optionalTextField,
+  cons: optionalTextField,
+  media: z.array(draftMediaInputSchema).max(10).optional(),
+});
+
+export const getDraftByIdSchema = z.object({
+  id: z.number().int().positive(),
+});
+
+export const discardDraftSchema = z.object({
+  reviewId: z.number().int().positive(),
+});
+
+export const publishDraftSchema = z.object({
+  reviewId: z.number().int().positive(),
+});
+
 export type CreateReviewSchema = z.infer<typeof createReviewSchema>;
 export type CreateReviewFormSchema = z.input<typeof createReviewFormSchema>;
 export type ListReviewsInputSchema = z.infer<typeof listReviewsInputSchema>;
@@ -142,3 +178,8 @@ export type UpdateReviewSchema = z.infer<typeof updateReviewSchema>;
 export type DeleteReviewSchema = z.infer<typeof deleteReviewSchema>;
 export type ReviewStatusSchema = z.infer<typeof reviewStatusSchema>;
 export type UpdateReviewStatusSchema = z.infer<typeof updateReviewStatusSchema>;
+export type CreateDraftSchema = z.infer<typeof createDraftSchema>;
+export type UpdateDraftSchema = z.infer<typeof updateDraftSchema>;
+export type GetDraftByIdSchema = z.infer<typeof getDraftByIdSchema>;
+export type DiscardDraftSchema = z.infer<typeof discardDraftSchema>;
+export type PublishDraftSchema = z.infer<typeof publishDraftSchema>;

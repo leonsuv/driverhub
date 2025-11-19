@@ -1,253 +1,186 @@
-# Copilot Full Project Execution Checklist (Self-Hosted Edition)
+# Copilot Ultimate Project Execution Checklist (Drive2.ru Clone)
 
-This checklist helps you and Copilot track progress across the **entire Drive2.ru clone** project (self-hosted version with NextAuth, local PostgreSQL, and local file storage). Copy into `copilot-checklist.md` and keep it updated during every iteration and chat. Mark checkboxes as you go; add notes as needed so Copilot always knows what's done, what's next, and what to focus on.
+This is the master roadmap for the **Self-Hosted Drive2 Clone**. It covers the core application, advanced automotive logic, social engines, gamification, and platform stability.
 
-## Core Initial Steps
-- [x] Create project repo and directory structure (see prompt.md)
-- [x] Add prompt.md with full specification (self-hosted version)
+## 1. Core Foundation & Infrastructure
+- [x] Create project repo and directory structure
+- [x] Add prompt.md with full specification
 - [x] Set up environment variables (`.env.example`, `.env.local`)
 - [x] Setup local PostgreSQL database (Docker or bare metal)
-
-## Project Setup
 - [x] Initialize Next.js 15 (App Router, TypeScript, Tailwind v4, pnpm)
 - [x] Initialize shadcn/ui, install required components
-- [x] Install all dependencies (tRPC v11, Drizzle, NextAuth.js v5, bcryptjs, React Hook Form, Zod)
-- [x] Remove any Supabase dependencies (if accidentally installed)
-- [x] Create initial commit with setup files
-
-## Infrastructure
-- [x] Create Drizzle ORM config and schema files
-- [x] Setup local PostgreSQL connection via DATABASE_URL
-- [x] Run database migrations, seed basic car data
-- [x] Implement tRPC context (protected/public procedures with NextAuth session)
+- [x] Install dependencies (tRPC v11, Drizzle, NextAuth v5, bcryptjs, Zod)
+- [x] Implement tRPC context (protected/public procedures)
 - [x] Setup tRPC client/server config
-- [x] Implement environment variable config helper (`src/config/env.ts`)
-- [x] Create `.env.local` file with DATABASE_URL, NEXTAUTH_SECRET, etc.
+- [x] Implement environment variable config helper
+- [x] Create Drizzle ORM config and schema files
+- [x] Run migrations and verify schema connections
 
-## Authentication (NextAuth.js v5)
-- [x] Install NextAuth.js v5 beta and Drizzle adapter
-- [x] Create NextAuth config (`src/lib/auth/config.ts`)
-- [x] Setup Credentials provider with bcrypt password hashing
-- [x] Create NextAuth API route (`src/app/api/auth/[...nextauth]/route.ts`)
-- [x] Implement user registration endpoint with password hashing
-- [x] Create login/register pages in `src/app/(auth)/`
-- [x] Setup session management helpers (`src/lib/auth/session.ts`)
-- [x] Implement auth middleware for protected routes (`src/lib/auth/middleware.ts`)
-- [ ] Test authentication flow (register, login, logout)
+## 2. Authentication & User Identity
+- [x] Install NextAuth.js v5 and Drizzle adapter
+- [x] Setup Credentials provider with bcrypt hashing
+- [x] Implement user registration endpoint
+- [x] Create login/register pages
+- [x] Setup session management helpers & middleware
+- [ ] **Social Auth:** Add Google/GitHub providers
+- [ ] **Password Reset:** Email flow with temporal tokens
+- [ ] **Email Verification:** Verify user email on signup
+- [ ] **Account Settings:** Change password, Update email
+- [ ] **Privacy Settings:** Toggle visibility of garage/costs
+- [ ] **Session Management:** "Sign out all other devices"
+- [ ] **Delete Account:** Soft delete or GDPR hard delete
 
-## File Upload (Local Storage)
-- [x] Create `public/uploads/` directory
-- [x] Add `public/uploads/*` to `.gitignore`
-- [x] Create file upload API route (`src/app/api/upload/route.ts`)
-- [x] Implement file validation (type, size)
-- [x] Require authentication for uploads
-- [ ] Test file upload and retrieval
-- [x] Create upload utility helpers (`src/lib/utils/upload.ts`)
-
-## Database Schema
-- [x] Users table (with password field for NextAuth)
-- [x] Sessions table (NextAuth sessions)
-- [x] Verification tokens table (NextAuth)
+## 3. The Garage: Vehicle Management
 - [x] Cars table (make, model, year, specs)
 - [x] User Cars (Garage) table
+- [x] Car Catalog (Make/Model/Generation hierarchy)
+- [x] Add Car flow (connect user to catalog car)
+- [x] Garage management UI
+- [x] Car Detail Page (Specs + User Reviews)
+- [x] **Car Passport:** Fields for VIN, Engine Code, Color Code, Trim
+- [x] **Modifications List:** Dedicated section for mods (linked to marketplace parts)
+- [x] **Vehicle Status:** "Sold", "Wrecked", "Hidden", "Project", "Daily"
+- [x] **Transfer Ownership:** Flow to move a car profile to another user (selling)
+- [x] **Car Gallery:** Drag-and-drop photo gallery for the car header
+- [x] **Garage Sorting:** Drag-and-drop ordering of cars
+- [x] **License Plate Blurring:** Auto-detect and blur plates on upload
+
+## 4. Content Engine: Logbook (Reviews)
 - [x] Reviews table (with author, car references)
 - [x] Review Media table (images/videos)
-- [x] Comments table (with nested support)
+- [x] Create/Update/Delete Review endpoints
+- [x] Review creation form with image upload
+- [x] Review detail page with comments
+- [x] Rich text content support
+- [ ] **Drafts System:** Auto-save drafts to DB or LocalStorage
+- [ ] **Post Categories:** Tags for "DIY", "Tuning", "Travel", "Photoshoot", "Repair", "Accident"
+- [ ] **Series/Chapters:** Group posts into a "Story" (e.g., "Engine Swap Part 1")
+- [ ] **Cost Association:** Field to add "Cost of this event" (currency support)
+- [ ] **Mileage Tracking:** Input mileage at time of post
+- [ ] **Video Embeds:** YouTube/Vimeo parsing
+- [ ] **Gallery Mode:** Lightbox viewer for post images
+
+## 5. Social Graph & Interaction
+- [x] Comments table (nested support)
 - [x] Likes table (reviews and comments)
 - [x] Follows table (user-to-user)
 - [x] Bookmarks table (saved reviews)
-- [x] Define all Drizzle relations
-- [x] Run migrations and verify schema
+- [x] Follow user in feed/profile/review
+- [x] Like/Unlike reviews and comments
+- [x] Bookmark reviews
+- [ ] **Car Subscription:** Follow a specific *Car* (updates specific to that vehicle)
+- [ ] **Mentions:** `@username` parsing in comments/posts
+- [ ] **Reposts:** "Share to my feed" functionality
+- [ ] **Guestbook:** Simple "Wall" on user profiles for public messages
+- [ ] **"I Saw You":** Special post type for spotting community cars on the road
+- [ ] **Blocking:** Block user (hides content, prevents interaction)
+- [ ] **Social Sharing:** Native share sheet integration
 
-## Feature Slices (Vertical Slice Architecture)
-- [x] Auth: Implement feature folder, tRPC router, components, hooks, domain/entities
-- [x] Reviews: Implement feature folder, router, repository, domain logic, components, hooks
-- [x] Cars (catalog): Implement feature folder, router, repository, domain/entities, components, hooks
-- [x] Social (comments/likes/follows): Implement feature folder, router, repository, domain/entities, components
-- [x] Users (profile): Implement feature folder, router, repository, domain/entities, components
-- [x] Garage: Implement feature folder, router, repository, domain/entities, components
-- [x] Feed: Implement feature folder, feed service, router, repository, domain logic, components
+## 6. Automotive Utilities (Data & Tools)
+- [ ] **Fuel Log:**
+    - [ ] Input: Odometer, Liters, Price, Fuel Grade, Station
+    - [ ] Stats: MPG / L/100km calculation
+    - [ ] Charts: Consumption history
+- [ ] **Expense Tracker:**
+    - [ ] Categories: Insurance, Tax, Wash, Parking, Fines, Parts
+    - [ ] "Total Invested" metric on Car Profile
+- [ ] **Maintenance Scheduler:**
+    - [ ] Set intervals (e.g., "Oil Change every 10k km")
+    - [ ] Alert user when odometer reaches threshold
+- [ ] **Tire Calculator:** Visual tool to compare tire sizes
+- [ ] **Wheel Offset Calculator:** Visual tool for rim fitment
 
-## UI Implementation
-- [x] Shared UI folder: import and customize shadcn/ui components
-- [x] Implement main layout/navigation/header/footer
-- [x] Create auth forms (login, register) with NextAuth integration
+## 7. Gamification: The "Drive" Score
+- [ ] **User Reputation:** Points system for likes received and helpful comments
+- [ ] **Car "Drive" Score (DR):**
+    - [ ] Algorithm (Views + Followers + Activity + Completeness)
+    - [ ] Daily updates via Cron job
+- [ ] **Leaderboards:**
+    - [ ] "Top Cars" by City/Region
+    - [ ] "Top Cars" by Make/Model
+    - [ ] "Top Users"
+- [ ] **"Car of the Day" (Elections):**
+    - [ ] **Scheduler:** Auto-select candidates (Top DR cars not won recently)
+    - [ ] **Voting UI:** "Battle" mode (A vs B) or List mode
+    - [ ] **Hall of Fame:** Calendar view of past winners
+    - [ ] **Trophies:** Digital badges on Car Profile (e.g., "Election Winner")
+
+## 8. Marketplace (Flea Market)
+- [ ] **Marketplace Schema:** Items, Prices, Condition, Location
+- [ ] **Parts Database:** Categories (Engine, Body, Wheels, Audio)
+- [ ] **Create Listing:** Sell a part linked to a specific car model compatibility
+- [ ] **Car Sales:** Specialized listing for selling a garage vehicle
+- [ ] **Geo-Location:** "Parts near me" filter
+- [ ] **Seller Rating:** 1-5 stars after transaction
+- [ ] **Expiration:** Auto-expire listings after 30 days
+
+## 9. Communities & Groups
+- [ ] **Communities Schema:** Groups, Memberships, Roles
+- [ ] **Club Creation:** Create specialized groups (e.g., "JDM Legends")
+- [ ] **Club Feed:** Posts tagged for the club
+- [ ] **Events/Meetups:**
+    - [ ] Create Event (Date, Location Map)
+    - [ ] "I'm Going" / RSVP list
+
+## 10. Messaging & Notifications
+- [ ] **Notification Schema:** Types, Read Status, Payload
+- [ ] **Notification Center:** UI with bell icon and unread count
+- [ ] **Triggers:** Like, Comment, Reply, Follow, Election Win, Mention
+- [ ] **Direct Messaging (Chat):**
+    - [ ] Conversation List
+    - [ ] Real-time messaging (WebSockets/SSE)
+    - [ ] Image attachments
+- [ ] **Email Notifications:** Digest of weekly activity (optional)
+
+## 11. Search & Discovery
+- [x] Basic Car Catalog Search
+- [ ] **Global Search Bar:** Unified search for Users, Cars, Posts, Parts
+- [ ] **Advanced Car Filter:** Filter by Engine, Drivetrain (RWD/AWD), Transmission, Horsepower
+- [ ] **Region Filter:** "Show content from my City"
+- [ ] **Hashtag System:** Clickable tags in posts (#bmw #drift)
+- [ ] **Recommendations:** "Similar cars you might like" algorithm
+
+## 12. UI Implementation & Navigation
+- [x] Main layout/navigation/header/footer
 - [x] Home/feed page with review listing
 - [x] Car catalog and detail pages
-- [x] Review creation form with image upload
-- [x] Review detail page with comments
-- [x] User profile pages
-- [x] Garage management UI
-- [x] Liked reviews section
-- [x] User draft reviews section
-- [ ] User bookmarked reviews section
-- [x] User followers/following section
-- [ ] User liked comments section
-- [x] Bookmark review in feed
-- [x] Bookmark review in review detail page
-- [ ] Follow user in feed
-- [ ] Follow user in profile
-- [ ] Follow user in review detail page
-- [ ] Follow user in review list
+- [x] User profile pages & Garage UI
+- [x] Click user name in feed
+- [x] Click user name in review detail page
+- [x] Click user name in review list
+- [x] Click user name in comments
+- [x] Click user name in liked reviews list
+- [x] Click user name in liked comments list
+- [x] Click user name in bookmarks list
+- [x] **Followers List Page/Modal**
+- [x] **Following List Page/Modal**
+- [x] Click user name in followers list
+- [x] Click user name in following list
+- [x] **User Hover Cards:** Quick profile preview on hover
+- [x] **Breadcrumbs:** Navigation aid for deep pages
+- [x] **Mobile Menus:** Responsive bottom sheet navigation
 
-## API Endpoints (tRPC Routers)
-- [x] Auth endpoints (register with password hashing, session management)
-- [x] Reviews endpoints (list, details, create, update, delete, increment view, filter)
-- [x] Car endpoints (list, catalog, search, filter, makes/models)
-- [x] Comments (create, get, update, delete, replies)
-- [x] Likes (toggle, get, user likes)
-- [x] Follows (toggle, get followers/following)
-- [ ] Users (profile, stats, update, search)
-- [x] Garage (get/add/update/remove cars)
-- [x] Feed (get personalized, latest, trending)
-- [x] Bookmarks (get/add/remove)
+## 13. Admin & Safety
+- [ ] **Admin Dashboard:** Stats (Users, Posts, Storage), System Health
+- [ ] **User Management:** Ban, Shadowban, Suspend
+- [ ] **Content Moderation:** Report content buttons, Review queue
+- [ ] **Automated Safety:** Rate limiting on API routes
+- [ ] **File Validation:** Strict mime-type checks and virus scanning (optional)
 
-## Real-Time Features
-- [ ] Implement tRPC Server-Sent Events (SSE) for notifications
-- [ ] Live comment updates
-- [ ] Real-time like counts
-- [ ] New review notifications
-- [ ] New comment notifications
-- [ ] New follow notifications
-- [ ] New like notifications
+## 14. File Storage & Media
+- [x] `public/uploads` local storage setup
+- [x] File upload API route
+- [x] File validation helpers
+- [ ] **Image Optimization:** Server-side resizing (Sharp)
+- [ ] **CDN Integration:** Option to swap local storage for S3/R2 later
+- [ ] **Backup Strategy:** Script to zip uploads folder
 
-## Testing & Validation
-- [ ] Unit tests for domain entities/services
-- [ ] Integration tests for API routers
-- [ ] Test authentication flow (register, login, session)
-- [ ] Test file upload and storage
-- [ ] Test database queries and relations
-- [ ] E2E tests for user journeys (register, create review, comment, follow, etc)
-- [ ] Add CI pipeline for ESLint, Prettier, type checks, test execution
-
-## Security & Quality
-- [ ] Verify bcrypt password hashing works correctly
-- [x] Add auth middleware and protect sensitive endpoints
-- [ ] Implement rate limiting on auth endpoints
-- [x] Validate file uploads (prevent malicious files)
-- [ ] Error handling: throw and catch errors in all mutations
-- [ ] Display user-friendly error states in UI
-- [ ] Implement loading skeletons for all pages
-- [x] Paginate and sort all major lists
-- [x] Use React Server Components where possible
-- [ ] Optimize images, lazy loading
-- [x] Ensure TypeScript strict mode everywhere
-- [ ] Review and secure all tRPC procedures
-- [ ] Implement rate limiting on API endpoints
-
-## Performance & Optimization
-- [ ] Implement caching/optimizations in React Query
-- [ ] Review slow endpoints/components, optimize as needed
-- [ ] Add database indexes for frequently queried fields
-- [ ] Optimize file storage (consider compression for images)
-- [ ] Implement lazy loading for lists and images
-
-## Deployment (Self-Hosted)
-- [ ] Create Dockerfile for Next.js app
-- [ ] Create docker-compose.yml with app + PostgreSQL
-- [ ] Configure environment variables for production
-- [ ] Setup persistent volumes for PostgreSQL and uploads
-- [ ] Test production build locally
-- [ ] Deploy to VPS/bare metal/Docker Swarm/Kubernetes
-- [ ] Setup domain and SSL/TLS certificates
-- [ ] Configure nginx/Caddy reverse proxy
-- [ ] Setup automated backups for PostgreSQL
-- [ ] Setup automated backups for uploaded files
-
-## Finalization
-- [ ] Review checklist, confirm completion of all major features
-- [ ] Polish UI and UX (accessibility, mobile responsiveness)
-- [ ] Documentation: Update README.md with setup instructions
-- [ ] Document API endpoints and schemas
-- [ ] Add code comments/JSDocs where needed
-- [ ] Test all user flows end-to-end
-- [ ] Initial release/commit/tag
-
----
-
-## Self-Hosted Specific Checklist
-
-### PostgreSQL Setup
-- [x] Install PostgreSQL 16 (Docker or native)
-- [x] Create database: `drivers`
-- [x] Configure DATABASE_URL in .env.local
-- [x] Test connection from Drizzle
-- [ ] Setup automated backups
-
-### File Storage Setup
-- [x] Create `public/uploads/` directory
-- [ ] Configure proper permissions (writable by app)
-- [ ] Test file write/read operations
-- [ ] Setup backup strategy for uploads
-- [ ] Consider volume mounting for Docker deployments
-
-### NextAuth.js Setup
-- [ ] Generate NEXTAUTH_SECRET with openssl
-- [ ] Configure NEXTAUTH_URL for production
-- [ ] Setup email provider (optional, for password reset)
-- [ ] Configure OAuth providers (Google, GitHub, etc.) if needed
-- [ ] Test session persistence and JWT handling
-
----
-
-## Tips for Best Practice
-- **Always** update this file after every session or major Copilot/Windsurf task
-- Before each new chat, review this and explicitly tell Copilot what to focus on next
-- Mark tasks as done `[x]` and add notes for blockers, clarifications, or additional features
-- Use as a living contract between you and Copilot (and any teammates)
-- Add new features/slices/tasks as needed, with links to further specs if required
-- Copy relevant completed code snippets and test results here for historical tracking
-
----
-
-## Custom Notes Section
-
-### Database Connection
-- DATABASE_URL format: `postgresql://user:password@host:port/database`
-- Example: `postgresql://postgres:mypassword@localhost:5439/drivers`
-
-### NextAuth Notes
-- NextAuth v5 uses App Router and Server Actions
-- Sessions stored in database via Drizzle adapter
-- Passwords hashed with bcrypt (10 salt rounds)
-
-### File Upload Notes
-- Max file size: 10MB (configurable in .env)
-- Allowed types: image/jpeg, image/png, image/webp, video/mp4
-
-### Session Notes (2025-11-12)
-- Implemented base reviews slice (create, list, fetch detail) with feed page rendering published reviews
-- Added review creation form with car selector and server-side detail page
-- Files saved to: `public/uploads/[timestamp]-[filename]`
-- Public URL: `/uploads/[timestamp]-[filename]`
-- Feed page now uses tRPC infinite query on client with loading skeleton and "Load more" support
-- Prefetch first feed page on the server and invalidate feed queries after publishing reviews for instant updates
-- Review detail fetch now runs in a transaction that increments view counts automatically
-- Review creation form supports uploading local media with alt text; media saved and rendered on detail page
-- Added authenticated app layout with header navigation, quick actions, and footer branding
-- Cars page lists catalog data with search + infinite loading via tRPC and Drizzle pagination
-- Car detail page aggregates variants, specs, and top community reviews via domain service
-- Review detail page now renders threaded comments with tRPC-backed create/list endpoints and auth-aware form
-
-### Session Notes (2025-11-13)
-- Social comments now support edit/delete with permission checks and shared mutation hooks
-- Comment UI uses reusable actions component with prefilled edit state and consistent error handling
-- Review comments section wired to new create/update/delete mutations with optimistic invalidation
-- Added comment like toggle (tRPC mutation, repository, UI) with current-user state tracking
-- Review likes implemented end-to-end (repository, tRPC, client button) with personalized liked state across feed, detail, and car pages
-- Cars catalog slice now centralizes domain mapping/search helpers, exposes catalog hook, and powers infinite browsing UI via tRPC
-- Reviews router now includes filtered listings, update/delete mutations, and a dedicated view increment endpoint
-- User profiles deliver public stats, published reviews, and owner-only draft management with publish/delete actions
-
-- Garage add form now supports photo file upload (local storage) with preview and car selection via dropdown
-- Profile shows Followers and Following lists with counts; quick navigation badges for Followers/Following/Liked
-- Liked reviews section added (owner-only) with pagination
-
-### Deployment Notes
-- Docker Compose includes PostgreSQL + App
-- Persistent volumes for: PostgreSQL data, uploaded files
-- Environment variables passed via docker-compose.yml
-
----
-
-Add your own notes, blockers, important context, meeting outcomes, or todo lists for features here.
+## 15. Deployment, DevOps & Quality
+- [ ] **Dockerfile:** Optimized multi-stage build
+- [ ] **Docker Compose:** App + Postgres + Redis configuration
+- [ ] **Nginx Config:** Reverse proxy with caching rules
+- [ ] **Backups:** Automated Postgres dump script
+- [ ] **SEO:** Metadata, sitemap.xml, robots.txt, OpenGraph tags
+- [ ] **E2E Tests:** Playwright tests for critical paths
+- [ ] **Unit Tests:** Jest for domain logic (Score algorithms, Cost calcs)
+- [ ] **Performance:** Database indexing, Query optimization

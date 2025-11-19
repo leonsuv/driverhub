@@ -12,6 +12,9 @@ import { FollowersList, FollowingList } from "@/features/social/components/follo
 import { LikedReviewsSection } from "@/features/reviews/components/liked-reviews-section";
 import { BookmarkedReviewsSection } from "@/features/reviews/components/bookmarked-reviews-section";
 import { countFollowers, countFollowing } from "@/features/social/infrastructure/follow.repository";
+import { LikedCommentsSection } from "@/features/social/components/liked-comments-section";
+import { ProfileFollowModals } from "@/features/users/components/profile-follow-modals";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -53,6 +56,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <div className="flex flex-col gap-10">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `@${profile.username}` }]} />
       <UserProfileHeader profile={profile} isOwner={isOwner} />
 
       {/* Quick navigation */}
@@ -62,10 +66,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         {isOwner ? (
           <>
             <a href="#liked" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Liked</a>
+            <a href="#liked-comments" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Liked comments</a>
             <a href="#bookmarked" className="rounded-full border px-3 py-1 text-sm hover:bg-muted">Bookmarked</a>
           </>
         ) : null}
       </nav>
+
+      <ProfileFollowModals
+        userId={profile.id}
+        followersCount={followersCount}
+        followingCount={followingCount}
+      />
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -96,10 +107,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
       <section className="grid gap-6 md:grid-cols-2">
         <div className="space-y-3" id="followers">
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `@${profile.username}`, href: `/profile/${profile.username}` }, { label: "Followers" }]} />
           <h2 className="text-xl font-semibold">Followers ({followersCount})</h2>
           <FollowersList userId={profile.id} />
         </div>
         <div className="space-y-3" id="following">
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `@${profile.username}`, href: `/profile/${profile.username}` }, { label: "Following" }]} />
           <h2 className="text-xl font-semibold">Following ({followingCount})</h2>
           <FollowingList userId={profile.id} />
         </div>
@@ -107,10 +120,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
       {isOwner ? (
         <div className="space-y-8">
-          <div id="liked">
+          <div id="liked" className="space-y-3">
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `@${profile.username}`, href: `/profile/${profile.username}` }, { label: "Liked" }]} />
             <LikedReviewsSection userId={profile.id} />
           </div>
-          <div id="bookmarked">
+          <div id="liked-comments" className="space-y-3">
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `@${profile.username}`, href: `/profile/${profile.username}` }, { label: "Liked comments" }]} />
+            <LikedCommentsSection userId={profile.id} />
+          </div>
+          <div id="bookmarked" className="space-y-3">
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `@${profile.username}`, href: `/profile/${profile.username}` }, { label: "Bookmarked" }]} />
             <BookmarkedReviewsSection userId={profile.id} />
           </div>
         </div>

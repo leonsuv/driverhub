@@ -11,6 +11,8 @@ import {
 import { formatRelativeDate } from "@/lib/utils/date";
 import type { ReviewSummary } from "@/features/reviews/types";
 import { ReviewBookmarkButton } from "@/features/reviews/components/review-bookmark-button";
+import { FollowButton } from "@/features/social/components/follow-button";
+import { UserHover } from "@/features/users/components/user-hover-card";
 
 interface ReviewCardProps {
   review: ReviewSummary;
@@ -31,7 +33,19 @@ export function ReviewCard({ review }: ReviewCardProps) {
           </span>
           {review.car.generation ? ` - ${review.car.generation}` : ""}
           <span className="text-muted-foreground">
-            {" "}- {review.author.displayName} (@{review.author.username})
+            {" "}-
+            <UserHover user={{ id: review.author.id, username: review.author.username, displayName: review.author.displayName, avatarUrl: review.author.avatarUrl }}>
+              <>
+                <Link href={`/profile/${review.author.username}`} className="ml-1 hover:underline text-foreground">
+                  {review.author.displayName}
+                </Link>
+                {" "}(
+                <Link href={`/profile/${review.author.username}`} className="hover:underline">
+                  @{review.author.username}
+                </Link>
+                )
+              </>
+            </UserHover>
           </span>
           <span className="text-muted-foreground"> - {formatRelativeDate(review.publishedAt)}</span>
         </CardDescription>
@@ -51,6 +65,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
         <span>Views: {review.stats.viewCount}</span>
         <span>Likes: {review.stats.likeCount}</span>
         <span>Comments: {review.stats.commentCount}</span>
+        <FollowButton targetUserId={review.author.id} />
         <div className="ml-auto">
           <ReviewBookmarkButton
             reviewId={review.id}
@@ -61,3 +76,4 @@ export function ReviewCard({ review }: ReviewCardProps) {
     </Card>
   );
 }
+

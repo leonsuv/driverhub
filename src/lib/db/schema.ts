@@ -23,6 +23,7 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "follow",
   "system",
 ]);
+export const vehicleStatusEnum = pgEnum("vehicle_status", ["daily", "project", "sold", "wrecked", "hidden"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -36,6 +37,29 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").default("user").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userCarMedia = pgTable("user_car_media", {
+  id: serial("id").primaryKey(),
+  userCarId: integer("user_car_id")
+    .notNull()
+    .references(() => userCars.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  orderIndex: integer("order_index").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userCarMods = pgTable("user_car_mods", {
+  id: serial("id").primaryKey(),
+  userCarId: integer("user_car_id")
+    .notNull()
+    .references(() => userCars.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 120 }).notNull(),
+  description: text("description"),
+  installedAt: timestamp("installed_at"),
+  costCents: integer("cost_cents"),
+  partUrl: text("part_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const accounts = pgTable(
@@ -124,8 +148,16 @@ export const userCars = pgTable("user_cars", {
   purchaseDate: timestamp("purchase_date"),
   mileage: integer("mileage"),
   modifications: text("modifications"),
+  // Car passport fields
+  vin: varchar("vin", { length: 32 }),
+  engineCode: varchar("engine_code", { length: 64 }),
+  colorCode: varchar("color_code", { length: 64 }),
+  trim: varchar("trim", { length: 100 }),
   imageUrl: text("image_url"),
   isActive: boolean("is_active").default(true).notNull(),
+  // Vehicle status and ordering
+  status: vehicleStatusEnum("status").default("daily").notNull(),
+  orderIndex: integer("order_index").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

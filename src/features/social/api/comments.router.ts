@@ -6,7 +6,8 @@ import {
 	deleteCommentInputSchema,
 	listCommentsInputSchema,
 	updateCommentInputSchema,
- 	toggleCommentLikeInputSchema,
+		toggleCommentLikeInputSchema,
+  listUserLikedCommentsInputSchema,
 } from "@/features/social/schemas/comment-schemas";
 import {
 	InvalidParentCommentError,
@@ -17,6 +18,7 @@ import {
 	updateComment,
 	listCommentsForReview,
 	toggleCommentLike,
+  listUserLikedComments,
 } from "@/features/social/infrastructure/comment.repository";
 
 export const commentsRouter = createTRPCRouter({
@@ -25,6 +27,15 @@ export const commentsRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			return listCommentsForReview(input.reviewId, ctx.user?.id);
 		}),
+  userLiked: protectedProcedure
+    .input(listUserLikedCommentsInputSchema)
+    .query(async ({ input, ctx }) => {
+      const limit = Math.min(Math.max(input.limit ?? 20, 1), 50);
+      if (input.userId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return listUserLikedComments({ userId: ctx.user.id, limit, cursor: input.cursor ?? null });
+    }),
 	create: protectedProcedure
 		.input(createCommentInputSchema)
 		.mutation(async ({ input, ctx }) => {

@@ -8,6 +8,13 @@
       "when": 1762947281975,
       "tag": "0000_last_mongoose",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763504689278,
+      "tag": "0001_even_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

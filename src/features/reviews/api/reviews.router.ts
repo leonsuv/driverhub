@@ -12,6 +12,11 @@ import {
   toggleReviewBookmarkInputSchema,
   updateReviewSchema,
   updateReviewStatusSchema,
+  createDraftSchema,
+  updateDraftSchema,
+  getDraftByIdSchema,
+  discardDraftSchema,
+  publishDraftSchema,
 } from "@/features/reviews/schemas/review-schemas";
 import {
   createReview,
@@ -26,6 +31,11 @@ import {
   toggleReviewBookmark,
   updateReview,
   updateReviewStatus,
+  createDraft,
+  getDraftByIdForAuthor,
+  updateDraft,
+  publishDraft,
+  discardDraft,
   ReviewNotFoundError,
   ReviewPermissionError,
 } from "@/features/reviews/infrastructure/review.repository";
@@ -218,4 +228,59 @@ export const reviewsRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
+  // Drafts
+  createDraft: protectedProcedure.input(createDraftSchema).mutation(async ({ input, ctx }) => {
+    const draft = await createDraft({ authorId: ctx.user.id, carId: input.carId, title: input.title ?? null });
+    return { reviewId: draft.id } as const;
+  }),
+  getDraft: protectedProcedure.input(getDraftByIdSchema).query(async ({ input, ctx }) => {
+    try {
+      const draft = await getDraftByIdForAuthor(input.id, ctx.user.id);
+      return draft;
+    } catch (error) {
+      if (error instanceof ReviewNotFoundError) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+      }
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  }),
+  updateDraft: protectedProcedure.input(updateDraftSchema).mutation(async ({ input, ctx }) => {
+    try {
+      return await updateDraft({ authorId: ctx.user.id, ...input });
+    } catch (error) {
+      if (error instanceof ReviewNotFoundError) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+      }
+      if (error instanceof ReviewPermissionError) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You cannot edit this draft" });
+      }
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  }),
+  publishDraft: protectedProcedure.input(publishDraftSchema).mutation(async ({ input, ctx }) => {
+    try {
+      return await publishDraft({ reviewId: input.reviewId, authorId: ctx.user.id });
+    } catch (error) {
+      if (error instanceof ReviewNotFoundError) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+      }
+      if (error instanceof ReviewPermissionError) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You cannot publish this draft" });
+      }
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  }),
+  discardDraft: protectedProcedure.input(discardDraftSchema).mutation(async ({ input, ctx }) => {
+    try {
+      return await discardDraft({ reviewId: input.reviewId, authorId: ctx.user.id });
+    } catch (error) {
+      if (error instanceof ReviewNotFoundError) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+      }
+      if (error instanceof ReviewPermissionError) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You cannot delete this draft" });
+      }
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  }),
 });

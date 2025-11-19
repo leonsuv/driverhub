@@ -355,6 +355,110 @@ export async function createReview(params: CreateReviewParams) {
   });
 }
 
+// Drafts
+interface CreateDraftParams {
+  authorId: string;
+  carId: number;
+  title?: string | null;
+}
+
+export async function createDraft(params: CreateDraftParams) {
+  const [row] = await db
+    .insert(reviews)
+    .values({
+      authorId: params.authorId,
+      carId: params.carId,
+      title: params.title ?? "",
+      content: "",
+      rating: 5,
+      pros: null,
+      cons: null,
+      status: "draft",
+      publishedAt: null,
+    })
+    .returning();
+  return row;
+}
+
+export async function getDraftByIdForAuthor(id: number, authorId: string) {
+  const draft = await db.query.reviews.findFirst({
+    where: (t, { and, eq }) => and(eq(t.id, id), eq(t.authorId, authorId), eq(t.status, "draft")),
+  });
+  if (!draft) throw new ReviewNotFoundError("Draft not found");
+  return draft;
+}
+
+interface UpdateDraftParams {
+  reviewId: number;
+  authorId: string;
+  carId?: number;
+  title?: string;
+  content?: string;
+  rating?: number;
+  pros?: string | null;
+  cons?: string | null;
+  media?: { url: string; type: "image" | "video"; altText?: string | null; order?: number }[];
+}
+
+export async function updateDraft(params: UpdateDraftParams) {
+  return db.transaction(async (tx) => {
+    const existing = await tx.query.reviews.findFirst({ where: (t, { eq }) => eq(t.id, params.reviewId) });
+    if (!existing) throw new ReviewNotFoundError("Draft not found");
+    if (existing.authorId !== params.authorId) throw new ReviewPermissionError("You cannot edit this draft");
+    if (existing.status !== "draft") throw new ReviewPermissionError("Only drafts can be edited here");
+
+    await tx
+      .update(reviews)
+      .set({
+        carId: params.carId ?? existing.carId,
+        title: params.title ?? existing.title,
+        content: params.content ?? existing.content,
+        rating: params.rating ?? existing.rating,
+        pros: params.pros ?? existing.pros,
+        cons: params.cons ?? existing.cons,
+        updatedAt: new Date(),
+      })
+      .where(eq(reviews.id, params.reviewId));
+
+    if (params.media) {
+      await tx.delete(reviewMedia).where(eq(reviewMedia.reviewId, params.reviewId));
+      if (params.media.length) {
+        await tx.insert(reviewMedia).values(
+          params.media.map((m, idx) => ({
+            reviewId: params.reviewId,
+            url: m.url,
+            type: m.type,
+            altText: normalizeOptionalField(m.altText ?? null),
+            order: m.order ?? idx,
+          })),
+        );
+      }
+    }
+
+    return { id: params.reviewId } as const;
+  });
+}
+
+export async function publishDraft(params: { reviewId: number; authorId: string }) {
+  const [updated] = await db
+    .update(reviews)
+    .set({ status: "published", publishedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(reviews.id, params.reviewId), eq(reviews.authorId, params.authorId), eq(reviews.status, "draft")))
+    .returning({ id: reviews.id });
+  if (!updated) throw new ReviewNotFoundError("Draft not found");
+  return { id: updated.id } as const;
+}
+
+export async function discardDraft(params: { reviewId: number; authorId: string }) {
+  const existing = await db.query.reviews.findFirst({ where: (t, { eq }) => eq(t.id, params.reviewId) });
+  if (!existing) throw new ReviewNotFoundError("Draft not found");
+  if (existing.authorId !== params.authorId) throw new ReviewPermissionError("You cannot delete this draft");
+  if (existing.status !== "draft") throw new ReviewPermissionError("Only drafts can be discarded");
+  await db.delete(reviewMedia).where(eq(reviewMedia.reviewId, params.reviewId));
+  await db.delete(reviews).where(eq(reviews.id, params.reviewId));
+  return { id: params.reviewId } as const;
+}
+
 export async function listLatestPublishedReviews({
   limit,
   cursor,

@@ -22,5 +22,13 @@ export function useGarage() {
     onSuccess: () => utils.garage.listMine.invalidate(),
   });
 
-  return { list, add, update, remove, setActive };
+  const move = trpc.garage.move.useMutation({
+    onSuccess: () => utils.garage.listMine.invalidate(),
+  });
+
+  const transfer = trpc.garage.transfer.useMutation({
+    onSuccess: () => utils.garage.listMine.invalidate(),
+  });
+
+  return { list, add, update, remove, setActive, move, transfer };
 }

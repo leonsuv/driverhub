@@ -17,6 +17,13 @@ export interface GarageItem {
   mileage?: number | null;
   modifications?: string;
   imageUrl?: string | null;
+  // Car passport
+  vin?: string | null;
+  engineCode?: string | null;
+  colorCode?: string | null;
+  trim?: string | null;
+  // Vehicle status
+  status?: "daily" | "project" | "sold" | "wrecked" | "hidden";
   isActive: boolean;
   createdAt: string;
   car: GarageCarSummary;

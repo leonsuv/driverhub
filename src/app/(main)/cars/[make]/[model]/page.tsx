@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CarDetailView } from "@/features/cars/components/car-detail-view";
 import { getCarDetailWithReviews } from "@/features/cars/domain/car-detail.service";
 import { getCurrentUser } from "@/lib/auth/session";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 interface CarModelPageProps {
   params: Promise<{
@@ -27,6 +28,7 @@ export default async function CarModelPage({ params }: CarModelPageProps) {
 
   return (
     <div className="flex flex-col gap-8">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Cars", href: "/cars" }, { label: `${make} ${model}` }]} />
       <Button asChild variant="outline" className="w-fit">
         <Link href="/cars">Back to catalog</Link>
       </Button>

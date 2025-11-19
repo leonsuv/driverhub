@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CommentActions } from "@/features/social/components/comment-actions";
 import type { CommentNode } from "@/features/social/types";
 import { formatRelativeDate } from "@/lib/utils/date";
+import { UserHover } from "@/features/users/components/user-hover-card";
 
 interface CommentItemProps {
 	comment: CommentNode;
@@ -95,18 +97,28 @@ export function CommentItem({
 	return (
 		<div className="space-y-3">
 			<div className="flex gap-3">
-				<Avatar className="h-10 w-10">
-					<AvatarImage src={comment.author.avatarUrl ?? undefined} alt={comment.author.displayName} />
-					<AvatarFallback>
-						{comment.author.displayName.charAt(0).toUpperCase()}
-					</AvatarFallback>
-				</Avatar>
+				<Link href={`/profile/${comment.author.username}`} className="shrink-0">
+					<Avatar className="h-10 w-10">
+						<AvatarImage src={comment.author.avatarUrl ?? undefined} alt={comment.author.displayName} />
+						<AvatarFallback>
+							{comment.author.displayName.charAt(0).toUpperCase()}
+						</AvatarFallback>
+					</Avatar>
+				</Link>
 				<div className="flex-1 space-y-2">
 					<div className="flex flex-wrap items-center gap-2">
-						<p className="font-medium text-sm text-foreground">{comment.author.displayName}</p>
-						<p className="text-muted-foreground text-xs">
-							@{comment.author.username} • {formatRelativeDate(comment.createdAt)}
-						</p>
+						<UserHover user={{ id: comment.author.id, username: comment.author.username, displayName: comment.author.displayName, avatarUrl: comment.author.avatarUrl }}>
+							<>
+								<Link href={`/profile/${comment.author.username}`} className="font-medium text-sm text-foreground hover:underline">
+									{comment.author.displayName}
+								</Link>
+								<p className="text-muted-foreground text-xs inline">
+									{" "}
+									<Link href={`/profile/${comment.author.username}`} className="hover:underline">@{comment.author.username}</Link>
+								</p>
+							</>
+						</UserHover>
+						<p className="text-muted-foreground text-xs">{" "}• {formatRelativeDate(comment.createdAt)}</p>
 					</div>
 					{isEditing ? (
 						<div className="space-y-2">

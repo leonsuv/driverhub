@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/layout/main-nav";
 import { UserMenu } from "@/components/layout/user-menu";
+import { MobileMenu } from "@/components/layout/mobile-menu";
 import { auth } from "@/lib/auth/config";
 
 const navItems = [
@@ -27,6 +28,7 @@ export default async function MainLayout({ children }: MainLayoutProps) {
           <Link href="/feed" className="text-lg font-semibold tracking-tight">
             driverhub
           </Link>
+          <MobileMenu items={navItems} user={session?.user ?? null} />
           <MainNav items={navItems} />
           <div className="ml-auto flex items-center gap-2">
             <Button asChild size="sm" className="hidden sm:inline-flex">

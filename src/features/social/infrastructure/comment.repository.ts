@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt, sql } from "drizzle-orm";
 
 import { buildCommentTree, mapRowToCommentNode } from "@/features/social/domain/comment-tree";
 import type { CommentNode } from "@/features/social/types";
@@ -6,6 +6,100 @@ import { db } from "@/lib/db";
 import { commentLikes, comments, reviews, users } from "@/lib/db/schema";
 
 export class InvalidParentCommentError extends Error {}
+
+// Lightweight type for listing liked comments
+export interface LikedCommentSummary {
+  id: number;
+  reviewId: number;
+  content: string;
+  likeCount: number;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+interface ListUserLikedCommentsParams {
+  userId: string;
+  limit: number;
+  cursor?: string | null;
+}
+
+interface ListUserLikedCommentsResult {
+  items: LikedCommentSummary[];
+  nextCursor: string | null;
+}
+
+function encodeCommentCursor(createdAt: Date, commentId: number) {
+  return Buffer.from(`${createdAt.toISOString()}::${commentId}`).toString("base64");
+}
+
+function decodeCommentCursor(cursor?: string | null) {
+  if (!cursor) return null;
+  try {
+    const [iso, id] = Buffer.from(cursor, "base64").toString("utf8").split("::");
+    return { createdAt: new Date(iso), commentId: Number(id) };
+  } catch {
+    return null;
+  }
+}
+
+export async function listUserLikedComments(
+  params: ListUserLikedCommentsParams,
+): Promise<ListUserLikedCommentsResult> {
+  const normalizedLimit = Math.min(Math.max(params.limit, 1), 50);
+  const decoded = decodeCommentCursor(params.cursor ?? null);
+
+  const rows = await db
+    .select({
+      comment: comments,
+      review: reviews,
+      author: {
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      },
+      likedAt: commentLikes.createdAt,
+    })
+    .from(commentLikes)
+    .innerJoin(comments, eq(comments.id, commentLikes.commentId))
+    .innerJoin(reviews, eq(reviews.id, comments.reviewId))
+    .innerJoin(users, eq(users.id, comments.authorId))
+    .where(
+      decoded
+        ? and(eq(commentLikes.userId, params.userId), lt(commentLikes.createdAt, decoded.createdAt))
+        : eq(commentLikes.userId, params.userId),
+    )
+    .orderBy(desc(commentLikes.createdAt))
+    .limit(normalizedLimit + 1);
+
+  const hasNext = rows.length > normalizedLimit;
+  const visible = hasNext ? rows.slice(0, normalizedLimit) : rows;
+
+  const items: LikedCommentSummary[] = visible.map((row) => ({
+    id: row.comment.id,
+    reviewId: row.review.id,
+    content: row.comment.content,
+    likeCount: row.comment.likeCount,
+    createdAt: row.comment.createdAt.toISOString(),
+    author: {
+      id: row.author.id,
+      username: row.author.username,
+      displayName: row.author.displayName,
+      avatarUrl: row.author.avatarUrl,
+    },
+  }));
+
+  const nextCursor = hasNext
+    ? encodeCommentCursor(visible[visible.length - 1].likedAt as unknown as Date, visible[visible.length - 1].comment.id)
+    : null;
+
+  return { items, nextCursor };
+}
 export class CommentNotFoundError extends Error {}
 export class CommentPermissionError extends Error {}
 
